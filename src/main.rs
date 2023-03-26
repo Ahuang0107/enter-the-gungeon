@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::new())
+        .add_plugin(ScreenDiagnosticsPlugin::default())
+        .add_plugin(ScreenFrameDiagnosticsPlugin)
         .add_startup_system(setup)
         .add_system(system_move_camera)
         .run();
