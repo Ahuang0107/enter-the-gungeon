@@ -6,6 +6,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(setup)
+        .add_system(system_move_camera)
         .run();
 }
 
@@ -78,5 +79,38 @@ fn setup(
                 });
             }
         }
+    }
+}
+
+fn system_move_camera(
+    mut camera_current: Local<Vec2>,
+    mut camera_target: Local<Vec2>,
+    mut query_cameras: Query<&mut Transform, With<Camera2d>>,
+    keyboard: Res<Input<KeyCode>>,
+) {
+    let speed = 10.0;
+
+    if keyboard.pressed(KeyCode::W) {
+        camera_target.y += speed;
+    }
+    if keyboard.pressed(KeyCode::S) {
+        camera_target.y -= speed;
+    }
+    if keyboard.pressed(KeyCode::A) {
+        camera_target.x -= speed;
+    }
+    if keyboard.pressed(KeyCode::D) {
+        camera_target.x += speed;
+    }
+
+    // Smooth camera.
+    let blend_ratio = 0.18;
+    let movement = *camera_target - *camera_current;
+    *camera_current += movement * blend_ratio;
+
+    // Update all sprite cameras.
+    for mut camera_transform in query_cameras.iter_mut() {
+        camera_transform.translation.x = camera_current.x;
+        camera_transform.translation.y = camera_current.y;
     }
 }
