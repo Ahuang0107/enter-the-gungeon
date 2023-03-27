@@ -2,6 +2,9 @@ use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 
+mod level;
+mod layout;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
