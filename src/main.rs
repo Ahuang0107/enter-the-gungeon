@@ -10,7 +10,7 @@ mod tilemap;
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
+    app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugin(debug::DebugPlugin)
         .add_startup_system(setup_camera)
         .add_startup_system(tilemap::setup)
