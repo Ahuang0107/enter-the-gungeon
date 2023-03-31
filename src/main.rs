@@ -5,8 +5,6 @@ use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlu
 
 mod custom_material;
 mod custom_mesh;
-mod layout;
-mod level;
 mod render_set_system;
 mod tilemap;
 

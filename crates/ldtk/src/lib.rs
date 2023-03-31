@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct Project {
     #[serde(rename = "jsonVersion")]
     pub json_version: String,
+    #[serde(rename = "defaultGridSize")]
+    pub default_grid_size: usize,
     pub defs: Definitions,
     pub levels: Vec<Level>,
 }
@@ -30,14 +32,47 @@ pub struct TilesetDefinition {
     pub c_wid: usize,
     #[serde(rename = "__cHei")]
     pub c_hei: usize,
-    #[serde(rename = "pxWid")]
-    pub px_wid: usize,
-    #[serde(rename = "pxHei")]
-    pub px_hei: usize,
     #[serde(rename = "tileGridSize")]
     pub tile_grid_size: usize,
     #[serde(rename = "relPath")]
     pub rel_path: String,
+}
+
+impl TilesetDefinition {
+    /// 根据 grid tiles 中的 src 得到在 tileset 中的 index
+    /// index 从 1 开始，因为 0 被用来表示 null
+    pub fn get_index(&self, src: (usize, usize)) -> usize {
+        let (x, y) = src;
+        assert!(x <= (self.c_wid - 1) * self.tile_grid_size);
+        assert!(y <= (self.c_hei - 1) * self.tile_grid_size);
+        let x_i = x / self.tile_grid_size;
+        let y_i = y / self.tile_grid_size;
+        x_i + 1 + y_i * self.c_wid
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::TilesetDefinition;
+
+    #[test]
+    fn check() {
+        let tileset = TilesetDefinition {
+            uid: 0,
+            c_wid: 10,
+            c_hei: 2,
+            tile_grid_size: 16,
+            rel_path: String::new(),
+        };
+        assert_eq!(tileset.get_index((0, 0)), 1);
+        assert_eq!(tileset.get_index((16, 0)), 2);
+        assert_eq!(tileset.get_index((32, 0)), 3);
+        assert_eq!(tileset.get_index((32, 0)), 3);
+        assert_eq!(tileset.get_index((144, 0)), 10);
+        assert_eq!(tileset.get_index((0, 16)), 11);
+        assert_eq!(tileset.get_index((16, 16)), 12);
+        assert_eq!(tileset.get_index((144, 16)), 20);
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
