@@ -14,3 +14,4 @@ members = [
 bevy = { version = "0.10.0" }
 bevy-inspector-egui = "0.18.0"
 bevy_screen_diagnostics = "0.2.3"
+tilemap = { path = "./crates/tilemap" }

@@ -6,8 +6,11 @@ mod layer;
 #[allow(dead_code)]
 mod level;
 #[allow(dead_code)]
+mod tileset;
+#[allow(dead_code)]
 mod world;
 
 pub use layer::TilemapLayer;
 pub use level::TilemapLevel;
+pub use tileset::Tileset;
 pub use world::TilemapWorld;

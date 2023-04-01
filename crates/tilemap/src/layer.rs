@@ -1,24 +1,34 @@
 #[derive(Debug)]
 pub struct TilemapLayer {
+    pub name: String,
     pub(crate) c_w: usize,
     pub(crate) c_h: usize,
     pub(crate) tiles: Vec<Vec<u8>>,
+    pub tileset_uid: usize,
 }
 
 impl TilemapLayer {
-    pub fn from_slice(tiles: &[&[u8]]) -> Self {
+    pub fn from_slice(tileset_uid: usize, tiles: &[&[u8]]) -> Self {
         Self {
+            name: String::new(),
             c_w: tiles[0].len(),
             c_h: tiles.len(),
             tiles: tiles.to_vec().iter().map(|row| row.to_vec()).collect(),
+            tileset_uid,
         }
     }
-    pub fn from_vec(tiles: Vec<Vec<u8>>) -> Self {
+    pub fn from_vec(tileset_uid: usize, tiles: Vec<Vec<u8>>) -> Self {
         Self {
+            name: String::new(),
             c_w: tiles[0].len(),
             c_h: tiles.len(),
             tiles,
+            tileset_uid,
         }
+    }
+    pub fn with_name(mut self, name: &str) -> Self {
+        self.name = String::from(name);
+        self
     }
     pub fn for_each<F: FnMut((usize, usize, u8))>(&self, mut op: F) {
         for y in 0..self.c_h {

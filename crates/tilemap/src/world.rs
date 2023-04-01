@@ -1,8 +1,9 @@
-use crate::{TilemapLayer, TilemapLevel};
+use crate::{TilemapLayer, TilemapLevel, Tileset};
 
 #[derive(Debug)]
 pub struct TilemapWorld {
     pub levels: Vec<TilemapLevel>,
+    pub tilesets: Vec<Tileset>,
 }
 
 impl TilemapWorld {
@@ -43,10 +44,20 @@ impl TilemapWorld {
                     layer_matrix[y_i][x_i] = tileset.get_index(tile.src) as u8;
                 }
 
-                tilemap_level.push_layer(TilemapLayer::from_vec(layer_matrix));
+                tilemap_level.push_layer(
+                    TilemapLayer::from_vec(*tileset_id, layer_matrix).with_name(&layer.identifier),
+                );
             }
             levels.push(tilemap_level);
         }
-        Ok(Self { levels })
+        Ok(Self {
+            levels,
+            tilesets: project
+                .defs
+                .tilesets
+                .iter()
+                .map(|tileset| Tileset::from(tileset))
+                .collect::<Vec<Tileset>>(),
+        })
     }
 }

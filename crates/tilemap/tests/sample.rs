@@ -4,6 +4,7 @@ use tilemap::TilemapWorld;
 fn check() {
     let world = TilemapWorld::from_ldtk("tests/sample.ldtk").unwrap();
     assert_eq!(world.levels.len(), 1);
+    assert_eq!(world.tilesets.len(), 5);
     let level = &world.levels[0];
     assert_eq!(level.c_w, 31);
     assert_eq!(level.c_h, 29);
