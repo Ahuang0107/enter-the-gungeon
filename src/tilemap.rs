@@ -21,37 +21,56 @@ pub fn setup(
         tileset_map.insert(tileset.uid, texture_atlases.add(texture_altlas));
     }
 
+    let mut collision_tiles: Option<Vec<Vec<u8>>> = None;
     for level in tilemap_world.levels.iter() {
         for layer in level.layers.iter() {
+            let mut tiles = vec![];
             let texture_altlas_handle = tileset_map.get(&layer.tileset_uid).unwrap();
-            info!("{}", layer.name);
+            if layer.name.as_str() == "" {
+                collision_tiles = Some(layer.tiles.clone());
+            }
             layer.for_each(|(x, y, tile)| {
                 if tile > 0 {
-                    c.spawn(SpriteSheetBundle {
-                        sprite: TextureAtlasSprite {
-                            index: tile as usize - 1,
+                    tiles.push(
+                        c.spawn(SpriteSheetBundle {
+                            sprite: TextureAtlasSprite {
+                                index: tile as usize - 1,
+                                ..default()
+                            },
+                            texture_atlas: texture_altlas_handle.clone(),
+                            transform: Transform {
+                                translation: Vec3::new(
+                                    x as f32 * 16.0,
+                                    y as f32 * -16.0,
+                                    match layer.name.as_str() {
+                                        "WallTop" => 5.0,
+                                        "WallTop_bg" => 4.0,
+                                        "Wall" => 3.0,
+                                        "FloorDecoration" => 2.0,
+                                        "Floor" => 1.0,
+                                        _ => 0.0,
+                                    },
+                                ),
+                                ..default()
+                            },
                             ..default()
-                        },
-                        texture_atlas: texture_altlas_handle.clone(),
-                        transform: Transform {
-                            translation: Vec3::new(
-                                x as f32 * 16.0,
-                                y as f32 * -16.0,
-                                match layer.name.as_str() {
-                                    "WallTop" => 5.0,
-                                    "WallTop_bg" => 4.0,
-                                    "Wall" => 3.0,
-                                    "FloorDecoration" => 2.0,
-                                    "Floor" => 1.0,
-                                    _ => 0.0,
-                                },
-                            ),
-                            ..default()
-                        },
-                        ..default()
-                    });
+                        })
+                        .id(),
+                    );
                 }
             });
+            c.spawn(Name::new(layer.name.clone()))
+                .insert(SpatialBundle::default())
+                .push_children(&tiles);
         }
     }
+
+    c.insert_resource(CollisionInfo {
+        tiles: collision_tiles.unwrap(),
+    })
+}
+
+#[derive(Resource, Debug)]
+pub struct CollisionInfo {
+    pub tiles: Vec<Vec<u8>>,
 }

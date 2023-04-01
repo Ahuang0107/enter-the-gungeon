@@ -3,7 +3,7 @@ pub struct TilemapLayer {
     pub name: String,
     pub(crate) c_w: usize,
     pub(crate) c_h: usize,
-    pub(crate) tiles: Vec<Vec<u8>>,
+    pub tiles: Vec<Vec<u8>>,
     pub tileset_uid: usize,
 }
 
@@ -54,7 +54,7 @@ mod test {
 
     #[test]
     fn check_new() {
-        let layer = TilemapLayer::from_slice(SAMPLE);
+        let layer = TilemapLayer::from_slice(0, SAMPLE);
         assert_eq!(layer.c_w, 8);
         assert_eq!(layer.c_h, 6);
         assert_eq!(layer.tiles[2][5], 2);
@@ -62,7 +62,7 @@ mod test {
 
     #[test]
     fn check_for_each() {
-        let layer = TilemapLayer::from_slice(SAMPLE);
+        let layer = TilemapLayer::from_slice(0, SAMPLE);
         layer.for_each(|(x, y, v)| match (x, y) {
             (0, 0) => assert_eq!(v, 1),
             (1, 0) => assert_eq!(v, 1),
