@@ -1,4 +1,5 @@
 use crate::sprite_animation::SpriteAnimation;
+use crate::tilemap::CollisionInfo;
 use bevy::prelude::*;
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
@@ -40,7 +41,7 @@ pub fn setup(
     c.spawn(SpriteSheetBundle {
         texture_atlas: texture_atlases.add(texture_altlas),
         transform: Transform {
-            translation: Vec3::new(0.0, 0.0, 10.0),
+            translation: Vec3::new(64.0, -64.0, 10.0),
             ..default()
         },
         ..default()
@@ -124,6 +125,7 @@ pub fn update_character_sprite(
 pub fn character_move(
     mut query: Query<(&mut Transform, &mut Character)>,
     keyboard: Res<Input<KeyCode>>,
+    collision_info: Res<CollisionInfo>,
 ) {
     let speed = 0.7_f32;
     const RATIO: f32 = std::f32::consts::SQRT_2 / 2.0;
@@ -131,43 +133,50 @@ pub fn character_move(
     for (mut t, mut char) in query.iter_mut() {
         let mut direction: Option<CharacterDirection> = None;
         let mut walking = false;
+        let mut old = t.translation;
 
         if keyboard.pressed(KeyCode::W) {
             if keyboard.pressed(KeyCode::A) {
-                t.translation.y += speed * RATIO;
-                t.translation.x -= speed * RATIO;
+                old.y += speed * RATIO;
+                old.x -= speed * RATIO;
                 direction = Some(CharacterDirection::UpLeft);
             } else if keyboard.pressed(KeyCode::D) {
-                t.translation.y += speed * RATIO;
-                t.translation.x += speed * RATIO;
+                old.y += speed * RATIO;
+                old.x += speed * RATIO;
                 direction = Some(CharacterDirection::UpRight);
             } else {
-                t.translation.y += speed;
+                old.y += speed;
                 direction = Some(CharacterDirection::Up);
             }
             walking = true;
         } else if keyboard.pressed(KeyCode::S) {
             if keyboard.pressed(KeyCode::A) {
-                t.translation.y -= speed * RATIO;
-                t.translation.x -= speed * RATIO;
+                old.y -= speed * RATIO;
+                old.x -= speed * RATIO;
                 direction = Some(CharacterDirection::DownLeft);
             } else if keyboard.pressed(KeyCode::D) {
-                t.translation.y -= speed * RATIO;
-                t.translation.x += speed * RATIO;
+                old.y -= speed * RATIO;
+                old.x += speed * RATIO;
                 direction = Some(CharacterDirection::DownRight);
             } else {
-                t.translation.y -= speed;
+                old.y -= speed;
                 direction = Some(CharacterDirection::Down);
             }
             walking = true;
         } else if keyboard.pressed(KeyCode::A) {
-            t.translation.x -= speed;
+            old.x -= speed;
             direction = Some(CharacterDirection::DownLeft);
             walking = true;
         } else if keyboard.pressed(KeyCode::D) {
-            t.translation.x += speed;
+            old.x += speed;
             direction = Some(CharacterDirection::DownRight);
             walking = true;
+        }
+
+        let c_x = (old.x / 16.0) as usize;
+        let c_y = (-old.y / 16.0) as usize;
+        if collision_info.tiles[c_y][c_x] > 0 {
+            t.translation = old;
         }
 
         if let Some(direction) = direction {
