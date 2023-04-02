@@ -26,7 +26,7 @@ pub fn setup(
         for layer in level.layers.iter() {
             let mut tiles = vec![];
             let texture_altlas_handle = tileset_map.get(&layer.tileset_uid).unwrap();
-            if layer.name.as_str() == "" {
+            if layer.name.as_str() == "Floor" {
                 collision_tiles = Some(layer.tiles.clone());
             }
             layer.for_each(|(x, y, tile)| {

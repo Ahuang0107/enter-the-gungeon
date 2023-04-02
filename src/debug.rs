@@ -23,16 +23,16 @@ fn move_camera(
 ) {
     let speed = 10.0;
 
-    if keyboard.pressed(KeyCode::W) {
+    if keyboard.pressed(KeyCode::Up) {
         camera_target.y += speed;
     }
-    if keyboard.pressed(KeyCode::S) {
+    if keyboard.pressed(KeyCode::Down) {
         camera_target.y -= speed;
     }
-    if keyboard.pressed(KeyCode::A) {
+    if keyboard.pressed(KeyCode::Left) {
         camera_target.x -= speed;
     }
-    if keyboard.pressed(KeyCode::D) {
+    if keyboard.pressed(KeyCode::Right) {
         camera_target.x += speed;
     }
 
