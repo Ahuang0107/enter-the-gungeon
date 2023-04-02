@@ -10,12 +10,14 @@ impl Plugin for AnimationPlugin {
 }
 
 /// 切换动画的开始帧和结束帧的位置
-#[derive(Component)]
+#[derive(Component, Reflect)]
 pub struct SpriteAnimation {
     timer: Timer,
     /// 不同 tag 对应的帧
+    #[reflect(ignore)]
     tag_frames: std::collections::HashMap<&'static str, &'static [usize]>,
     /// 当前的 tag 和当前的帧的索引
+    #[reflect(ignore)]
     current_frame: (&'static str, usize),
     is_loop: bool,
     finished: bool,

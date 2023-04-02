@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::{RenderApp, RenderSet};
+use bevy_kira_audio::prelude::*;
 
 mod character;
 mod custom_material;
@@ -13,6 +14,7 @@ fn main() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugin(AudioPlugin)
         .add_plugin(debug::DebugPlugin)
         .add_plugin(sprite_animation::AnimationPlugin)
         .add_startup_system(setup_camera)
@@ -21,6 +23,7 @@ fn main() {
         .add_startup_system(custom_material::setup)
         .add_startup_system(character::setup)
         .add_system(character::update_character_sprite)
+        .add_system(character::play_character_sound)
         .add_system(character::character_move);
 
     let render_app = app.sub_app_mut(RenderApp);

@@ -1,6 +1,9 @@
 use crate::sprite_animation::SpriteAnimation;
 use bevy::prelude::*;
+use bevy_kira_audio::AudioControl;
+use rand::Rng;
 
+#[derive(PartialEq)]
 pub enum CharacterAction {
     Idle,
     Walking,
@@ -53,7 +56,7 @@ pub fn setup(
             ("Walking_Up", &[28, 29, 30, 31, 32, 33]),
             ("Walking_UpRight", &[34, 35, 36, 37, 38, 39]),
         ],
-        0.15,
+        0.1,
     ))
     .insert(Character {
         direction: CharacterDirection::Down,
@@ -175,6 +178,32 @@ pub fn character_move(
             char.action = CharacterAction::Walking;
         } else {
             char.action = CharacterAction::Idle;
+        }
+    }
+}
+
+pub fn play_character_sound(
+    query: Query<&TextureAtlasSprite, With<Character>>,
+    asset_server: Res<AssetServer>,
+    audio: Res<bevy_kira_audio::Audio>,
+) {
+    if !audio.is_playing_sound() {
+        for sprite in query.iter() {
+            match sprite.index {
+                17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => match rand::thread_rng().gen_range(1..4) {
+                    1 => {
+                        audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
+                    }
+                    2 => {
+                        audio.play(asset_server.load("sound/barefoot_stone_02.wav"));
+                    }
+                    3 => {
+                        audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
         }
     }
 }
