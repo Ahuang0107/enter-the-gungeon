@@ -1,10 +1,8 @@
 use bevy::prelude::*;
-use bevy::render::{RenderApp, RenderSet};
 use bevy_kira_audio::prelude::*;
 
 mod character;
 mod debug;
-mod render_set_system;
 mod sprite_animation;
 mod tilemap;
 
@@ -21,9 +19,6 @@ fn main() {
         .add_system(character::update_character_sprite)
         .add_system(character::play_character_sound)
         .add_system(character::character_move);
-
-    let render_app = app.sub_app_mut(RenderApp);
-    render_app.add_system(render_set_system::setup.in_set(RenderSet::ExtractCommands));
 
     app.run();
 }
