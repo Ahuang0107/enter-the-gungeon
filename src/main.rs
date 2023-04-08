@@ -3,8 +3,6 @@ use bevy::render::{RenderApp, RenderSet};
 use bevy_kira_audio::prelude::*;
 
 mod character;
-mod custom_material;
-mod custom_mesh;
 mod debug;
 mod render_set_system;
 mod sprite_animation;
@@ -19,8 +17,6 @@ fn main() {
         .add_plugin(sprite_animation::AnimationPlugin)
         .add_startup_system(setup_camera)
         .add_startup_system(tilemap::setup)
-        .add_startup_system(custom_mesh::setup)
-        .add_startup_system(custom_material::setup)
         .add_startup_system(character::setup)
         .add_system(character::update_character_sprite)
         .add_system(character::play_character_sound)
