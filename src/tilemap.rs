@@ -19,7 +19,8 @@ pub fn setup(
         }),
         transform: Transform::from_xyz(0.0, 0.0, 1.5),
         ..default()
-    });
+    })
+    .insert(Name::new("Ground"));
     c.spawn(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
             6.4,
@@ -37,26 +38,31 @@ pub fn setup(
         transform: Transform::from_xyz(-16.0 + 6.4 / 2.0, 17.6, 1.5 + (3.2 / 3.0_f32.sqrt()) / 2.0)
             .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
-    });
+    })
+    .insert(Name::new("Wall"));
     c.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 5000.0,
             ..default()
         },
         ..default()
-    });
+    })
+    .insert(Name::new("Global Light"));
     c.spawn(point_light(
         Vec2::new(-16.0 + 6.4 / 2.0, 17.6),
         Color::rgba(1.0, 1.0, 1.0, 0.9),
-    ));
+    ))
+    .insert(Name::new("Left Top Lamp Light"));
     c.spawn(point_light(
         Vec2::new(15.0, -15.0),
         Color::rgba(0.8, 0.8, 0.0, 0.9),
-    ));
+    ))
+    .insert(Name::new("Right Top Lamp Light"));
     c.spawn(point_light(
         Vec2::new(-15.0, -15.0),
         Color::rgba(1.0, 0.5, 0.2, 0.9),
-    ));
+    ))
+    .insert(Name::new("Right Bottom Lamp Light"));
 }
 
 fn point_light(pos: Vec2, color: Color) -> PointLightBundle {

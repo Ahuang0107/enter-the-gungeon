@@ -10,7 +10,9 @@ impl Plugin for DebugPlugin {
         app.add_plugin(WorldInspectorPlugin::new())
             .add_plugin(ScreenDiagnosticsPlugin::default())
             .add_plugin(ScreenFrameDiagnosticsPlugin)
-            .register_type::<bevy_3d_sprite::SpriteSheet>()
+            .register_type::<bevy_3d_sprite::TextureAtlasSprite>()
+            .register_type::<bevy_3d_sprite::TextureAtlas>()
+            .register_type::<bevy_3d_sprite::SpriteAnimation>()
             .add_system(move_camera)
             .add_system(scroll_camera);
     }

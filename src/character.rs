@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_3d_sprite::{PbrSpriteBundle, SpriteAnimation, SpriteSheet};
+use bevy_3d_sprite::{PbrSpriteBundle, SpriteAnimation};
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
@@ -48,16 +48,17 @@ pub fn setup(
     mut c: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut texture_atlases: ResMut<Assets<bevy_3d_sprite::TextureAtlas>>,
     asset_server: Res<AssetServer>,
 ) {
     c.spawn(PbrSpriteBundle {
-        mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(2.4, 2.6)))),
-        sprite_sheet: SpriteSheet::from_grid(
+        texture_atlas: texture_atlases.add(bevy_3d_sprite::TextureAtlas::from_grid(
             asset_server.load("art/covict.png"),
             Vec2::new(24.0, 26.0),
             13,
             12,
-        ),
+        )),
+        mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(2.4, 2.6)))),
         material: materials.add(StandardMaterial {
             alpha_mode: AlphaMode::Blend,
             unlit: true,
@@ -70,11 +71,16 @@ pub fn setup(
     .insert(Character {
         direction: CharacterDirection::Down,
         action: CharacterAction::Idle,
-    });
+    })
+    .insert(Name::new("Character"));
 }
 
 pub fn update_character_sprite(
-    mut query: Query<(&mut SpriteSheet, &mut SpriteAnimation, &Character)>,
+    mut query: Query<(
+        &mut bevy_3d_sprite::TextureAtlasSprite,
+        &mut SpriteAnimation,
+        &Character,
+    )>,
 ) {
     for (mut sprite, mut anima, char) in query.iter_mut() {
         match char.action {
@@ -197,7 +203,7 @@ pub fn character_move(
 }
 
 pub fn play_character_sound(
-    query: Query<&SpriteSheet, With<Character>>,
+    query: Query<&bevy_3d_sprite::TextureAtlasSprite, With<Character>>,
     asset_server: Res<AssetServer>,
     audio: Res<bevy_kira_audio::Audio>,
 ) {

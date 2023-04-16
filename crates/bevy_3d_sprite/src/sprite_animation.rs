@@ -1,4 +1,3 @@
-use crate::sprite_sheet::SpriteSheet;
 use bevy::prelude::*;
 
 /// 切换动画的开始帧和结束帧的位置
@@ -81,7 +80,10 @@ impl SpriteAnimation {
 
 pub fn sprite_animation(
     time: Res<Time>,
-    mut query: Query<(&mut SpriteAnimation, &mut SpriteSheet)>,
+    mut query: Query<(
+        &mut SpriteAnimation,
+        &mut crate::pbr_sprite::TextureAtlasSprite,
+    )>,
 ) {
     for (mut animation, mut sprite) in &mut query {
         if animation.just_last {
