@@ -3,7 +3,6 @@ use bevy_kira_audio::prelude::*;
 
 mod character;
 mod debug;
-mod sprite_animation;
 mod tilemap;
 
 fn main() {
@@ -12,7 +11,7 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugin(AudioPlugin)
         .add_plugin(debug::DebugPlugin)
-        .add_plugin(sprite_animation::AnimationPlugin)
+        .add_plugin(bevy_3d_sprite::Sprite3dPlugin)
         .add_startup_system(setup_camera)
         .add_startup_system(tilemap::setup)
         .add_startup_system(character::setup)
@@ -24,5 +23,9 @@ fn main() {
 }
 
 fn setup_camera(mut c: Commands) {
-    c.spawn(Camera2dBundle::default());
+    c.spawn(Camera3dBundle {
+        projection: OrthographicProjection { ..default() }.into(),
+        transform: Transform::from_xyz(0.0, 0.0, 20.0).with_scale(Vec3::splat(0.05)),
+        ..default()
+    });
 }

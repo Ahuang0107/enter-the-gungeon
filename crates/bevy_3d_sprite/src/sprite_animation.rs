@@ -1,13 +1,5 @@
+use crate::sprite_sheet::SpriteSheet;
 use bevy::prelude::*;
-
-/// 因为Animation的逻辑完全是封闭的，所以可以写成Plugin然后只暴露出一个Component
-pub struct AnimationPlugin;
-
-impl Plugin for AnimationPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_system(sprite_animation);
-    }
-}
 
 /// 切换动画的开始帧和结束帧的位置
 #[derive(Component, Reflect)]
@@ -72,13 +64,13 @@ impl SpriteAnimation {
 
 pub fn sprite_animation(
     time: Res<Time>,
-    mut query: Query<(&mut SpriteAnimation, &mut TextureAtlasSprite)>,
+    mut query: Query<(&mut SpriteAnimation, &mut SpriteSheet)>,
 ) {
     for (mut animation, mut sprite) in &mut query {
         if !animation.if_finished() {
             animation.timer.tick(time.delta());
             if animation.timer.just_finished() {
-                sprite.index = animation.next_frame();
+                sprite.index = Some(animation.next_frame());
             }
         }
     }

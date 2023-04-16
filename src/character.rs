@@ -1,6 +1,5 @@
-use crate::sprite_animation::SpriteAnimation;
-use crate::tilemap::CollisionInfo;
 use bevy::prelude::*;
+use bevy_3d_sprite::{PbrSpriteBundle, SpriteAnimation, SpriteSheet};
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
@@ -27,23 +26,24 @@ pub struct Character {
 
 pub fn setup(
     mut c: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
-    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    let texture_altlas = TextureAtlas::from_grid(
-        asset_server.load("art/covict.png"),
-        Vec2::new(24.0, 26.0),
-        13,
-        12,
-        None,
-        None,
-    );
-    c.spawn(SpriteSheetBundle {
-        texture_atlas: texture_atlases.add(texture_altlas),
-        transform: Transform {
-            translation: Vec3::new(64.0, -64.0, 10.0),
+    c.spawn(PbrSpriteBundle {
+        mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(2.4, 2.6)))),
+        sprite_sheet: SpriteSheet::from_grid(
+            asset_server.load("art/covict.png"),
+            Vec2::new(24.0, 26.0),
+            13,
+            12,
+        ),
+        material: materials.add(StandardMaterial {
+            alpha_mode: AlphaMode::Blend,
+            unlit: true,
             ..default()
-        },
+        }),
+        transform: Transform::from_xyz(0.0, 0.0, 10.0),
         ..default()
     })
     .insert(SpriteAnimation::from_loop(
@@ -66,7 +66,7 @@ pub fn setup(
 }
 
 pub fn update_character_sprite(
-    mut query: Query<(&mut TextureAtlasSprite, &mut SpriteAnimation, &Character)>,
+    mut query: Query<(&mut SpriteSheet, &mut SpriteAnimation, &Character)>,
 ) {
     for (mut sprite, mut anima, char) in query.iter_mut() {
         match char.action {
@@ -125,9 +125,8 @@ pub fn update_character_sprite(
 pub fn character_move(
     mut query: Query<(&mut Transform, &mut Character)>,
     keyboard: Res<Input<KeyCode>>,
-    collision_info: Res<CollisionInfo>,
 ) {
-    let speed = 0.7_f32;
+    let speed = 0.07_f32;
     const RATIO: f32 = std::f32::consts::SQRT_2 / 2.0;
 
     for (mut t, mut char) in query.iter_mut() {
@@ -173,9 +172,7 @@ pub fn character_move(
             walking = true;
         }
 
-        let c_x = (old.x / 16.0) as usize;
-        let c_y = (-old.y / 16.0) as usize;
-        if collision_info.tiles[c_y][c_x] > 0 {
+        if walking {
             t.translation = old;
         }
 
@@ -192,26 +189,30 @@ pub fn character_move(
 }
 
 pub fn play_character_sound(
-    query: Query<&TextureAtlasSprite, With<Character>>,
+    query: Query<&SpriteSheet, With<Character>>,
     asset_server: Res<AssetServer>,
     audio: Res<bevy_kira_audio::Audio>,
 ) {
     if !audio.is_playing_sound() {
         for sprite in query.iter() {
-            match sprite.index {
-                17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => match rand::thread_rng().gen_range(1..4) {
-                    1 => {
-                        audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
-                    }
-                    2 => {
-                        audio.play(asset_server.load("sound/barefoot_stone_02.wav"));
-                    }
-                    3 => {
-                        audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
+            if let Some(index) = sprite.index {
+                match index {
+                    17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => {
+                        match rand::thread_rng().gen_range(1..4) {
+                            1 => {
+                                audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
+                            }
+                            2 => {
+                                audio.play(asset_server.load("sound/barefoot_stone_02.wav"));
+                            }
+                            3 => {
+                                audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
+                            }
+                            _ => {}
+                        }
                     }
                     _ => {}
-                },
-                _ => {}
+                }
             }
         }
     }
