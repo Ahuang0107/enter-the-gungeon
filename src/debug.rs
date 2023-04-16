@@ -19,10 +19,10 @@ impl Plugin for DebugPlugin {
 fn move_camera(
     mut camera_current: Local<Vec2>,
     mut camera_target: Local<Vec2>,
-    mut query_cameras: Query<&mut Transform, With<Camera2d>>,
+    mut query_cameras: Query<&mut Transform, With<Camera>>,
     keyboard: Res<Input<KeyCode>>,
 ) {
-    let speed = 10.0;
+    let speed = 1.0;
 
     if keyboard.pressed(KeyCode::Up) {
         camera_target.y += speed;
@@ -50,17 +50,12 @@ fn move_camera(
 fn scroll_camera(
     mut scroll_evr: EventReader<MouseWheel>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut OrthographicProjection>,
+    mut query: Query<&mut Transform, With<Camera>>,
 ) {
     if keyboard_input.pressed(KeyCode::LShift) {
         for ev in scroll_evr.iter() {
-            for mut op in query.iter_mut() {
-                op.scale += ev.y / 1000.0;
-                if op.scale < 0.1 {
-                    op.scale = 0.1;
-                } else if op.scale > 1.0 {
-                    op.scale = 1.0;
-                }
+            for mut transform in query.iter_mut() {
+                transform.scale += ev.y / 1000.0;
             }
         }
     }
