@@ -11,8 +11,9 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugin(AudioPlugin)
         .add_plugin(debug::DebugPlugin)
-        .add_plugin(bevy_3d_sprite::Sprite3dPlugin)
-        .add_startup_system(setup_camera)
+        .add_plugin(bevy_3d_sprite::Sprite3dPlugin);
+    app.insert_resource(ClearColor(Color::rgba_u8(3, 12, 14, 255)));
+    app.add_startup_system(setup_camera)
         .add_startup_system(tilemap::setup)
         .add_startup_system(character::setup)
         .add_system(character::update_character_sprite)

@@ -18,6 +18,26 @@ pub enum CharacterDirection {
     UpRight,
 }
 
+const TAG_IDLE_DOWN: &'static str = "Idle_Down";
+const TAG_IDLE_DOWN_RIGHT: &'static str = "Idle_DownRight";
+const TAG_IDLE_UP: &'static str = "Idle_Up";
+const TAG_IDLE_UP_RIGHT: &'static str = "Idle_UpRight";
+const TAG_WALKING_DOWN: &'static str = "Walking_Down";
+const TAG_WALKING_DOWN_RIGHT: &'static str = "Walking_DownRight";
+const TAG_WALKING_UP: &'static str = "Walking_Up";
+const TAG_WALKING_UP_RIGHT: &'static str = "Walking_UpRight";
+
+const CHARACTER_FRAMES: [(&str, &[usize]); 8] = [
+    (TAG_IDLE_DOWN, &[0, 1, 2, 3]),
+    (TAG_IDLE_DOWN_RIGHT, &[4, 5, 6, 7]),
+    (TAG_IDLE_UP, &[8, 9, 10, 11]),
+    (TAG_IDLE_UP_RIGHT, &[12, 13, 14, 15]),
+    (TAG_WALKING_DOWN, &[16, 17, 18, 19, 20, 21]),
+    (TAG_WALKING_DOWN_RIGHT, &[22, 23, 24, 25, 26, 27]),
+    (TAG_WALKING_UP, &[28, 29, 30, 31, 32, 33]),
+    (TAG_WALKING_UP_RIGHT, &[34, 35, 36, 37, 38, 39]),
+];
+
 #[derive(Component)]
 pub struct Character {
     direction: CharacterDirection,
@@ -46,19 +66,7 @@ pub fn setup(
         transform: Transform::from_xyz(0.0, 0.0, 10.0),
         ..default()
     })
-    .insert(SpriteAnimation::from_loop(
-        &[
-            ("Idle_Down", &[0, 1, 2, 3]),
-            ("Idle_DownRight", &[4, 5, 6, 7]),
-            ("Idle_Up", &[8, 9, 10, 11]),
-            ("Idle_UpRight", &[12, 13, 14, 15]),
-            ("Walking_Down", &[16, 17, 18, 19, 20, 21]),
-            ("Walking_DownRight", &[22, 23, 24, 25, 26, 27]),
-            ("Walking_Up", &[28, 29, 30, 31, 32, 33]),
-            ("Walking_UpRight", &[34, 35, 36, 37, 38, 39]),
-        ],
-        0.1,
-    ))
+    .insert(SpriteAnimation::from_loop(&CHARACTER_FRAMES, 0.1))
     .insert(Character {
         direction: CharacterDirection::Down,
         action: CharacterAction::Idle,
@@ -72,49 +80,49 @@ pub fn update_character_sprite(
         match char.action {
             CharacterAction::Idle => match char.direction {
                 CharacterDirection::Down => {
-                    anima.update("Idle_Down");
+                    anima.update(TAG_IDLE_DOWN);
                 }
                 CharacterDirection::DownLeft => {
-                    anima.update("Idle_DownRight");
+                    anima.update(TAG_IDLE_DOWN_RIGHT);
                     sprite.flip_x = true;
                 }
                 CharacterDirection::DownRight => {
-                    anima.update("Idle_DownRight");
+                    anima.update(TAG_IDLE_DOWN_RIGHT);
                     sprite.flip_x = false;
                 }
                 CharacterDirection::Up => {
-                    anima.update("Idle_Up");
+                    anima.update(TAG_IDLE_UP);
                 }
                 CharacterDirection::UpLeft => {
-                    anima.update("Idle_UpRight");
+                    anima.update(TAG_IDLE_UP_RIGHT);
                     sprite.flip_x = true;
                 }
                 CharacterDirection::UpRight => {
-                    anima.update("Idle_UpRight");
+                    anima.update(TAG_IDLE_UP_RIGHT);
                     sprite.flip_x = false;
                 }
             },
             CharacterAction::Walking => match char.direction {
                 CharacterDirection::Down => {
-                    anima.update("Walking_Down");
+                    anima.update(TAG_WALKING_DOWN);
                 }
                 CharacterDirection::DownLeft => {
-                    anima.update("Walking_DownRight");
+                    anima.update(TAG_WALKING_DOWN_RIGHT);
                     sprite.flip_x = true;
                 }
                 CharacterDirection::DownRight => {
-                    anima.update("Walking_DownRight");
+                    anima.update(TAG_WALKING_DOWN_RIGHT);
                     sprite.flip_x = false;
                 }
                 CharacterDirection::Up => {
-                    anima.update("Walking_Up");
+                    anima.update(TAG_WALKING_UP);
                 }
                 CharacterDirection::UpLeft => {
-                    anima.update("Walking_UpRight");
+                    anima.update(TAG_WALKING_UP_RIGHT);
                     sprite.flip_x = true;
                 }
                 CharacterDirection::UpRight => {
-                    anima.update("Walking_UpRight");
+                    anima.update(TAG_WALKING_UP_RIGHT);
                     sprite.flip_x = false;
                 }
             },

@@ -13,10 +13,17 @@ pub struct SpriteAnimation {
     current_frame: (&'static str, usize),
     is_loop: bool,
     finished: bool,
+    just_last: bool,
 }
 
 impl SpriteAnimation {
-    pub fn from_loop(frames: &[(&'static str, &'static [usize])], interval: f32) -> Self {
+    pub fn from_loop(frames_groups: &[(&'static str, &'static [usize])], interval: f32) -> Self {
+        Self::from(frames_groups, interval, true)
+    }
+    pub fn from_once(frames: &'static [usize], interval: f32) -> Self {
+        Self::from(&[("", frames)], interval, false)
+    }
+    fn from(frames: &[(&'static str, &'static [usize])], interval: f32, is_loop: bool) -> Self {
         assert!(frames.len() > 0);
         let mut frames_map = std::collections::HashMap::new();
         for (name, frames) in frames {
@@ -26,8 +33,9 @@ impl SpriteAnimation {
             timer: Timer::from_seconds(interval, TimerMode::Repeating),
             tag_frames: frames_map,
             current_frame: (frames[0].0, 0),
-            is_loop: true,
+            is_loop,
             finished: false,
+            just_last: false,
         }
     }
     /// 更新当前循环的 frame 的 tag，如果相比原来有变化则返回true，否则返回false
@@ -40,7 +48,7 @@ impl SpriteAnimation {
         }
     }
     /// 更新到下一帧
-    pub fn next_frame(&mut self) -> usize {
+    pub fn next_frame(&mut self) -> Option<usize> {
         let &frames = self.tag_frames.get(self.current_frame.0).unwrap();
         let len = frames.len();
         let mut current_frame_index = self.current_frame.1 + 1;
@@ -49,9 +57,15 @@ impl SpriteAnimation {
             if !self.is_loop {
                 self.finished = true;
             }
+        } else if current_frame_index == len - 1 {
+            self.just_last = true;
         }
-        self.current_frame.1 = current_frame_index;
-        self.tag_frames.get(self.current_frame.0).unwrap()[self.current_frame.1]
+        if self.finished {
+            return None;
+        } else {
+            self.current_frame.1 = current_frame_index;
+            Some(self.tag_frames.get(self.current_frame.0).unwrap()[self.current_frame.1])
+        }
     }
     /// 判断当前是否在某一个状态
     pub fn if_tag(&self, tag: &str) -> bool {
@@ -60,6 +74,9 @@ impl SpriteAnimation {
     pub fn if_finished(&self) -> bool {
         self.finished
     }
+    pub fn if_just_last_frame(&self) -> bool {
+        self.just_last
+    }
 }
 
 pub fn sprite_animation(
@@ -67,10 +84,13 @@ pub fn sprite_animation(
     mut query: Query<(&mut SpriteAnimation, &mut SpriteSheet)>,
 ) {
     for (mut animation, mut sprite) in &mut query {
+        if animation.just_last {
+            animation.just_last = false;
+        }
         if !animation.if_finished() {
             animation.timer.tick(time.delta());
             if animation.timer.just_finished() {
-                sprite.index = Some(animation.next_frame());
+                sprite.index = animation.next_frame();
             }
         }
     }
