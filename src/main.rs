@@ -3,6 +3,7 @@ use bevy_kira_audio::prelude::*;
 
 mod character;
 mod debug;
+mod model;
 mod tilemap;
 
 fn main() {
