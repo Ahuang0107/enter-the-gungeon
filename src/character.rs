@@ -58,6 +58,10 @@ pub fn setup(
             13,
             12,
         )),
+        sprite: bevy_3d_sprite::TextureAtlasSprite {
+            index: Some(0),
+            flip_x: Some(false),
+        },
         mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(2.4, 2.6)))),
         material: materials.add(StandardMaterial {
             alpha_mode: AlphaMode::Blend,
@@ -90,22 +94,22 @@ pub fn update_character_sprite(
                 }
                 CharacterDirection::DownLeft => {
                     anima.update(TAG_IDLE_DOWN_RIGHT);
-                    sprite.flip_x = true;
+                    sprite.flip_x = Some(true);
                 }
                 CharacterDirection::DownRight => {
                     anima.update(TAG_IDLE_DOWN_RIGHT);
-                    sprite.flip_x = false;
+                    sprite.flip_x = Some(false);
                 }
                 CharacterDirection::Up => {
                     anima.update(TAG_IDLE_UP);
                 }
                 CharacterDirection::UpLeft => {
                     anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = true;
+                    sprite.flip_x = Some(true);
                 }
                 CharacterDirection::UpRight => {
                     anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = false;
+                    sprite.flip_x = Some(false);
                 }
             },
             CharacterAction::Walking => match char.direction {
@@ -114,22 +118,22 @@ pub fn update_character_sprite(
                 }
                 CharacterDirection::DownLeft => {
                     anima.update(TAG_WALKING_DOWN_RIGHT);
-                    sprite.flip_x = true;
+                    sprite.flip_x = Some(true);
                 }
                 CharacterDirection::DownRight => {
                     anima.update(TAG_WALKING_DOWN_RIGHT);
-                    sprite.flip_x = false;
+                    sprite.flip_x = Some(false);
                 }
                 CharacterDirection::Up => {
                     anima.update(TAG_WALKING_UP);
                 }
                 CharacterDirection::UpLeft => {
                     anima.update(TAG_WALKING_UP_RIGHT);
-                    sprite.flip_x = true;
+                    sprite.flip_x = Some(true);
                 }
                 CharacterDirection::UpRight => {
                     anima.update(TAG_WALKING_UP_RIGHT);
-                    sprite.flip_x = false;
+                    sprite.flip_x = Some(false);
                 }
             },
         }

@@ -34,12 +34,14 @@ pub fn update_base_texture(
                     if let Some(texture) = texture_atlas.texture_handles.get(&index) {
                         standard_material.base_color = Color::WHITE;
                         standard_material.base_color_texture = Some(texture.clone());
-                        if sprite.flip_x {
-                            standard_material.cull_mode = Some(Face::Front);
-                            transform.rotation = Quat::from_rotation_y(-PI);
-                        } else {
-                            standard_material.cull_mode = Some(Face::Back);
-                            transform.rotation = Quat::IDENTITY;
+                        if let Some(flip_x) = sprite.flip_x {
+                            if flip_x {
+                                standard_material.cull_mode = Some(Face::Front);
+                                transform.rotation = Quat::from_rotation_y(-PI);
+                            } else {
+                                standard_material.cull_mode = Some(Face::Back);
+                                transform.rotation = Quat::IDENTITY;
+                            }
                         }
                     }
                 }
@@ -62,7 +64,7 @@ pub struct TextureAtlas {
 #[derive(Clone, Debug, Default, Component, Reflect)]
 pub struct TextureAtlasSprite {
     pub index: Option<usize>,
-    pub flip_x: bool,
+    pub flip_x: Option<bool>,
 }
 
 impl TextureAtlas {

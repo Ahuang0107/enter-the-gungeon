@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_3d_sprite::PbrSpriteBundle;
 use std::f32::consts::PI;
 
 pub fn setup(
@@ -6,6 +7,7 @@ pub fn setup(
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut texture_atlases: ResMut<Assets<bevy_3d_sprite::TextureAtlas>>,
 ) {
     c.spawn(plane_pbr_texture(
         &mut meshes,
@@ -47,14 +49,30 @@ pub fn setup(
             ));
         });
     });
-    c.spawn(tilt_pbr_texture(
-        &mut meshes,
-        Vec2::new(6.4, 3.2),
-        &mut materials,
-        asset_server.load("art/wall_tests.png"),
-        Vec3::new(-16.0 + 6.4 / 2.0, 17.6, 1.5),
-    ))
-    .insert(Name::new("Wall"));
+    let wall_texture_atlas = texture_atlases.add(bevy_3d_sprite::TextureAtlas::from_grid(
+        asset_server.load("art/wall.png"),
+        Vec2::new(16.0, 32.0),
+        12,
+        1,
+    ));
+    {
+        c.spawn(tilt_pbr_sprite(
+            &mut meshes,
+            Vec2::new(1.6, 3.2),
+            &mut materials,
+            wall_texture_atlas.clone(),
+            Vec3::new(-16.0 + 1.6 / 2.0, 17.6, 1.5),
+        ))
+        .insert(Name::new("Wall"));
+        c.spawn(tilt_pbr_sprite(
+            &mut meshes,
+            Vec2::new(1.6, 3.2),
+            &mut materials,
+            wall_texture_atlas.clone(),
+            Vec3::new(-14.4 + 1.6 / 2.0, 17.6, 1.5),
+        ))
+        .insert(Name::new("Wall"));
+    }
     c.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             illuminance: 5000.0,
@@ -99,6 +117,37 @@ fn tilt_pbr_texture(
         )))),
         material: materials.add(StandardMaterial {
             base_color_texture: Some(image),
+            perceptual_roughness: 0.8,
+            metallic: 0.5,
+            reflectance: 0.1,
+            alpha_mode: AlphaMode::Blend,
+            depth_bias: 1.0,
+            ..default()
+        }),
+        transform: Transform::from_xyz(pos.x, pos.y, pos.z + (size.y / 3.0_f32.sqrt()) / 2.0)
+            .with_rotation(Quat::from_rotation_x(PI / 6.0)),
+        ..default()
+    }
+}
+
+fn tilt_pbr_sprite(
+    meshes: &mut ResMut<Assets<Mesh>>,
+    size: Vec2,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    texture_atlas_handle: Handle<bevy_3d_sprite::TextureAtlas>,
+    pos: Vec3,
+) -> PbrSpriteBundle {
+    PbrSpriteBundle {
+        texture_atlas: texture_atlas_handle,
+        sprite: bevy_3d_sprite::TextureAtlasSprite {
+            index: Some(0),
+            ..default()
+        },
+        mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+            size.x,
+            (size.y * 2.0) / 3.0_f32.sqrt(),
+        )))),
+        material: materials.add(StandardMaterial {
             perceptual_roughness: 0.8,
             metallic: 0.5,
             reflectance: 0.1,
