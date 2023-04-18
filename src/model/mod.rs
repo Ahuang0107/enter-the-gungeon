@@ -3,14 +3,15 @@
 /// 生成一个房间时，先生成对应的信息，再根据对应的信息往assets中加载贴图
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RoomModel {
-    /// 相对世界的位置，以中心为锚点
+    /// 相对世界的位置
     pos_index: [i32; 2],
     // TODO 暂时认为这里写死更方便，不需要灵活
     /// 使用墙壁贴图的位置，比较特殊因为tile size不是`[16.0,16.0]`而是`[16.0,32.0]`
     /// 但是位置依旧是用16tile计算出来的
-    walls: Vec<SpriteModel>,
+    pub walls: Vec<SpriteModel>,
     /// 使用屋顶贴图的位置
-    roofs: Vec<SpriteModel>,
+    pub roofs: Vec<SpriteModel>,
+    pub lights: Vec<LightModel>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -30,13 +31,59 @@ impl SpriteModel {
             tile_index: index,
         }
     }
+    pub fn translation(&self) -> [f32; 2] {
+        let x = self.pos_index[0] as f32;
+        let y = self.pos_index[1] as f32;
+        [(x * 16.0 + 8.0) / 10.0, (y * 16.0 + 8.0) / 10.0]
+    }
+    // TODO 这里比较特殊的是，wall是以两块tile为一个单位的，所以计算y的位置时还需要加上8.0
+    pub fn wall_translation(&self) -> [f32; 2] {
+        let x = self.pos_index[0] as f32;
+        let y = self.pos_index[1] as f32;
+        [(x * 16.0 + 8.0) / 10.0, (y * 16.0 + 8.0 + 8.0) / 10.0]
+    }
+    pub fn sprite_index(&self) -> usize {
+        self.tile_index
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct LightModel {
+    pos_index: [i32; 2],
+    pub color: [u8; 4],
+}
+
+impl LightModel {
+    pub const fn from_pos(x: i32, y: i32) -> Self {
+        Self {
+            pos_index: [x, y],
+            color: [255, 255, 255, 255],
+        }
+    }
+    pub const fn from(x: i32, y: i32, color: [u8; 4]) -> Self {
+        Self {
+            pos_index: [x, y],
+            color,
+        }
+    }
+    pub fn translation(&self) -> [f32; 2] {
+        let x = self.pos_index[0] as f32;
+        let y = self.pos_index[1] as f32;
+        [(x * 16.0 + 8.0) / 10.0, (y * 16.0 + 8.0) / 10.0]
+    }
 }
 
 impl RoomModel {
+    pub fn translation(&self) -> [f32; 2] {
+        let x = self.pos_index[0] as f32;
+        let y = self.pos_index[1] as f32;
+        [x, y]
+    }
     pub fn initial() -> Self {
         Self {
             pos_index: [0, 0],
             walls: vec![
+                // 最上面的墙
                 SpriteModel::from_pos(-10, 10),
                 SpriteModel::from_pos(-9, 10),
                 SpriteModel::from_pos(-8, 10),
@@ -127,7 +174,6 @@ impl RoomModel {
                 SpriteModel::from(10, -7, 6),
                 SpriteModel::from(10, -8, 6),
                 SpriteModel::from(10, -9, 6),
-                SpriteModel::from(10, -10, 6),
                 // 最左边的天花板
                 SpriteModel::from(-11, 11, 8),
                 SpriteModel::from(-11, 10, 8),
@@ -150,7 +196,6 @@ impl RoomModel {
                 SpriteModel::from(-11, -7, 8),
                 SpriteModel::from(-11, -8, 8),
                 SpriteModel::from(-11, -9, 8),
-                SpriteModel::from(-11, -10, 8),
                 // 左上角
                 SpriteModel::from(-11, 12, 4),
                 // 右上角
@@ -159,6 +204,13 @@ impl RoomModel {
                 SpriteModel::from(-11, -10, 10),
                 // 右下角
                 SpriteModel::from(10, -10, 11),
+            ],
+            lights: vec![
+                LightModel::from_pos(-9, 10),
+                LightModel::from_pos(8, 10),
+                LightModel::from(-10, -10, [255, 128, 50, 229]),
+                LightModel::from(9, -10, [200, 200, 0, 229]),
+                LightModel::from_pos(-2, 1),
             ],
         }
     }

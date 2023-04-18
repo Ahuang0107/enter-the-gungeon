@@ -5,6 +5,7 @@ mod character;
 mod debug;
 mod model;
 mod tilemap;
+mod utils;
 
 fn main() {
     let mut app = App::new();
