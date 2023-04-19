@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::window::PresentMode;
 use bevy_kira_audio::prelude::*;
 
 mod character;
@@ -10,10 +11,20 @@ mod utils;
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
-        .add_plugin(AudioPlugin)
-        .add_plugin(debug::DebugPlugin)
-        .add_plugin(bevy_3d_sprite::Sprite3dPlugin);
+    app.add_plugins(
+        DefaultPlugins
+            .set(ImagePlugin::default_nearest())
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    present_mode: PresentMode::AutoNoVsync,
+                    ..default()
+                }),
+                ..default()
+            }),
+    )
+    .add_plugin(AudioPlugin)
+    .add_plugin(debug::DebugPlugin)
+    .add_plugin(bevy_3d_sprite::Sprite3dPlugin);
     app.insert_resource(ClearColor(Color::rgba_u8(3, 12, 14, 255)));
     app.add_startup_system(setup_camera)
         .add_startup_system(tilemap::setup)
