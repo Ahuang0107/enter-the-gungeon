@@ -43,15 +43,15 @@ pub fn setup(
         ))
         .insert(Name::new("Ground"))
         .with_children(|p| {
-            p.spawn(tilt_pbr_texture(
-                &mut meshes,
-                Vec2::new(6.6, 15.1),
-                &mut materials,
-                asset_server.load("art/initial_stone_seat.png"),
-                Vec3::new(0.0, 12.0, 0.0),
-                1.0,
-            ))
-            .insert(NotShadowCaster::default());
+            // p.spawn(tilt_pbr_texture(
+            //     &mut meshes,
+            //     Vec2::new(6.6, 15.1),
+            //     &mut materials,
+            //     asset_server.load("art/initial_stone_seat.png"),
+            //     Vec3::new(0.0, 12.0, 0.0),
+            //     1.0,
+            // ))
+            // .insert(NotShadowCaster::default());
         });
         // 添加墙壁
         p.spawn(SpatialBundle::default())
