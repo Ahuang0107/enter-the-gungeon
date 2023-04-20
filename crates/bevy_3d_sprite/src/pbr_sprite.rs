@@ -36,11 +36,21 @@ pub fn update_base_texture(
                         standard_material.base_color_texture = Some(texture.clone());
                         if let Some(flip_x) = sprite.flip_x {
                             if flip_x {
-                                standard_material.cull_mode = Some(Face::Front);
-                                transform.rotation = Quat::from_rotation_y(-PI);
+                                if standard_material.cull_mode == Some(Face::Back) {
+                                    standard_material.cull_mode = Some(Face::Front);
+                                    // TODO 这里非常的trick，先将x轴的旋转转回去，再恢复x轴的旋转
+                                    //  这里默认了本来x轴是存在45度的旋转的
+                                    transform.rotate_x(-PI / 6.0);
+                                    transform.rotate_y(-PI);
+                                    transform.rotate_x(PI / 6.0);
+                                }
                             } else {
-                                standard_material.cull_mode = Some(Face::Back);
-                                transform.rotation = Quat::IDENTITY;
+                                if standard_material.cull_mode == Some(Face::Front) {
+                                    standard_material.cull_mode = Some(Face::Back);
+                                    transform.rotate_x(-PI / 6.0);
+                                    transform.rotate_y(PI);
+                                    transform.rotate_x(PI / 6.0);
+                                }
                             }
                         }
                     }

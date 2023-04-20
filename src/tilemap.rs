@@ -1,6 +1,8 @@
 use crate::model::RoomModel;
 use crate::utils;
+use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
+use std::f32::consts::PI;
 
 pub fn setup(
     mut c: Commands,
@@ -41,7 +43,7 @@ pub fn setup(
         ))
         .insert(Name::new("Ground"))
         .with_children(|p| {
-            p.spawn(plane_pbr_texture(
+            p.spawn(tilt_pbr_texture(
                 &mut meshes,
                 Vec2::new(6.6, 15.1),
                 &mut materials,
@@ -49,32 +51,7 @@ pub fn setup(
                 Vec3::new(0.0, 12.0, 0.0),
                 1.0,
             ))
-            .with_children(|p| {
-                p.spawn(plane_pbr_texture(
-                    &mut meshes,
-                    Vec2::new(2.9, 6.7),
-                    &mut materials,
-                    asset_server.load("art/initial_stone_statue.png"),
-                    Vec3::new(0.0, 1.9, 0.0),
-                    3.0,
-                ));
-                p.spawn(plane_pbr_texture(
-                    &mut meshes,
-                    Vec2::new(2.6, 3.0),
-                    &mut materials,
-                    asset_server.load("art/initial_stone_base.png"),
-                    Vec3::new(0.0, -1.8, 0.0),
-                    2.0,
-                ));
-                p.spawn(plane_pbr_texture(
-                    &mut meshes,
-                    Vec2::new(7.8, 6.1),
-                    &mut materials,
-                    asset_server.load("art/initial_stone_seat_shadow.png"),
-                    Vec3::new(0.0, -4.9, 0.0),
-                    1.0,
-                ));
-            });
+            .insert(NotShadowCaster::default());
         });
         // 添加墙壁
         p.spawn(SpatialBundle::default())
@@ -154,6 +131,34 @@ fn plane_pbr_texture(
             translation: pos,
             ..default()
         },
+        ..default()
+    }
+}
+
+fn tilt_pbr_texture(
+    meshes: &mut ResMut<Assets<Mesh>>,
+    size: Vec2,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    image: Handle<Image>,
+    // pos.z表示的是倾斜的sprite的底部的z值，实际的z值会根据y的长度计算
+    pos: Vec3,
+    depth_bias: f32,
+) -> PbrBundle {
+    // 倾斜30度，所以需要显示的y是a的话，实际quad的y需要是2a/√3
+    let mesh_size = Vec2::new(size.x, (size.y * 2.0) / 3.0_f32.sqrt());
+    PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Quad::new(mesh_size))),
+        material: materials.add(StandardMaterial {
+            base_color_texture: Some(image),
+            perceptual_roughness: 0.8,
+            metallic: 0.5,
+            reflectance: 0.1,
+            alpha_mode: AlphaMode::Blend,
+            depth_bias,
+            ..default()
+        }),
+        transform: Transform::from_xyz(pos.x, pos.y, (size.y / 3.0_f32.sqrt()) / 2.0)
+            .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
     }
 }

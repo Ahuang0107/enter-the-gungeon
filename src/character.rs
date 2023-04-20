@@ -1,7 +1,9 @@
+use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy_3d_sprite::{PbrSpriteBundle, SpriteAnimation};
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
+use std::f32::consts::PI;
 
 #[derive(PartialEq)]
 pub enum CharacterAction {
@@ -51,6 +53,8 @@ pub fn setup(
     mut texture_atlases: ResMut<Assets<bevy_3d_sprite::TextureAtlas>>,
     asset_server: Res<AssetServer>,
 ) {
+    let size = Vec2::new(2.4, 2.6);
+    let mesh_size = Vec2::new(size.x, (size.y * 2.0) / 3.0_f32.sqrt());
     c.spawn(PbrSpriteBundle {
         texture_atlas: texture_atlases.add(bevy_3d_sprite::TextureAtlas::from_grid(
             asset_server.load("art/covict.png"),
@@ -62,13 +66,15 @@ pub fn setup(
             index: Some(0),
             flip_x: Some(false),
         },
-        mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(2.4, 2.6)))),
+        mesh: meshes.add(Mesh::from(shape::Quad::new(mesh_size))),
         material: materials.add(StandardMaterial {
             alpha_mode: AlphaMode::Blend,
             unlit: true,
+            depth_bias: 10.0,
             ..default()
         }),
-        transform: Transform::from_xyz(0.0, 0.0, 10.0),
+        transform: Transform::from_xyz(0.0, 0.0, 1.5 + (size.y / 3.0_f32.sqrt()) / 2.0)
+            .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
     })
     .insert(SpriteAnimation::from_loop(&CHARACTER_FRAMES, 0.1))
@@ -76,6 +82,7 @@ pub fn setup(
         direction: CharacterDirection::Down,
         action: CharacterAction::Idle,
     })
+    .insert(NotShadowCaster::default())
     .insert(Name::new("Character"));
 }
 
