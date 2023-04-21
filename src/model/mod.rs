@@ -104,6 +104,8 @@ impl RoomModel {
                 SpriteModel::from_pos(7, 10),
                 SpriteModel::from_pos(8, 10),
                 SpriteModel::from_pos(9, 10),
+                //
+                SpriteModel::from_pos(-11, -4),
             ],
             // TODO 写到这里发现其实只按照固定规则来划分tileset得到的index可读性差
             //  而且tileset增加内容，修改排版时会导致index改变，不是很方便开发
@@ -188,11 +190,13 @@ impl RoomModel {
                 SpriteModel::from(-11, 1, 8),
                 SpriteModel::from(-11, 0, 8),
                 SpriteModel::from(-11, -1, 8),
-                SpriteModel::from(-11, -2, 8),
+                //
+                SpriteModel::from(-11, -2, 14),
                 // SpriteModel::from(-11, -3, 8),
                 // SpriteModel::from(-11, -4, 8),
                 // SpriteModel::from(-11, -5, 8),
-                SpriteModel::from(-11, -6, 8),
+                //
+                SpriteModel::from(-11, -6, 2),
                 SpriteModel::from(-11, -7, 8),
                 SpriteModel::from(-11, -8, 8),
                 SpriteModel::from(-11, -9, 8),
