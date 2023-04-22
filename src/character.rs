@@ -1,6 +1,7 @@
+use crate::resource::ResourceCache;
+use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
-use bevy_3d_sprite::{PbrSpriteBundle, SpriteAnimation};
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 use std::f32::consts::PI;
@@ -46,37 +47,15 @@ pub struct Character {
     action: CharacterAction,
 }
 
-pub fn setup(
-    mut c: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut texture_atlases: ResMut<Assets<bevy_3d_sprite::TextureAtlas>>,
-    asset_server: Res<AssetServer>,
-) {
-    let size = Vec2::new(2.4, 2.6);
-    let mesh_size = Vec2::new(size.x, (size.y * 2.0) / 3.0_f32.sqrt());
-    c.spawn(PbrSpriteBundle {
-        texture_atlas: texture_atlases.add(bevy_3d_sprite::TextureAtlas::from_grid(
-            asset_server.load("art/covict.png"),
-            Vec2::new(24.0, 26.0),
-            13,
-            12,
-        )),
-        sprite: bevy_3d_sprite::TextureAtlasSprite {
-            index: Some(0),
-            flip_x: Some(false),
-        },
-        mesh: meshes.add(Mesh::from(shape::Quad::new(mesh_size))),
-        material: materials.add(StandardMaterial {
-            alpha_mode: AlphaMode::Blend,
-            unlit: true,
-            depth_bias: 10.0,
-            ..default()
-        }),
-        transform: Transform::from_xyz(0.0, 0.0, 1.5 + (size.y / 3.0_f32.sqrt()) / 2.0)
+pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
+    c.spawn(PbrBundle {
+        mesh: cache.tile_24_26_deg_30().clone(),
+        material: cache.get_material("Covict", 0).clone(),
+        transform: Transform::from_xyz(0.0, 0.0, 1.5 + (2.6 / 3.0_f32.sqrt()) / 2.0)
             .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
     })
+    .insert(MaterialSprite::from("Covict", 0))
     .insert(SpriteAnimation::from_loop(&CHARACTER_FRAMES, 0.1))
     .insert(Character {
         direction: CharacterDirection::Down,
@@ -87,11 +66,7 @@ pub fn setup(
 }
 
 pub fn update_character_sprite(
-    mut query: Query<(
-        &mut bevy_3d_sprite::TextureAtlasSprite,
-        &mut SpriteAnimation,
-        &Character,
-    )>,
+    mut query: Query<(&mut MaterialSprite, &mut SpriteAnimation, &Character)>,
 ) {
     for (mut sprite, mut anima, char) in query.iter_mut() {
         match char.action {
@@ -101,22 +76,22 @@ pub fn update_character_sprite(
                 }
                 CharacterDirection::DownLeft => {
                     anima.update(TAG_IDLE_DOWN_RIGHT);
-                    sprite.flip_x = Some(true);
+                    sprite.flip_x = true;
                 }
                 CharacterDirection::DownRight => {
                     anima.update(TAG_IDLE_DOWN_RIGHT);
-                    sprite.flip_x = Some(false);
+                    sprite.flip_x = false;
                 }
                 CharacterDirection::Up => {
                     anima.update(TAG_IDLE_UP);
                 }
                 CharacterDirection::UpLeft => {
                     anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = Some(true);
+                    sprite.flip_x = true;
                 }
                 CharacterDirection::UpRight => {
                     anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = Some(false);
+                    sprite.flip_x = false;
                 }
             },
             CharacterAction::Walking => match char.direction {
@@ -125,22 +100,22 @@ pub fn update_character_sprite(
                 }
                 CharacterDirection::DownLeft => {
                     anima.update(TAG_WALKING_DOWN_RIGHT);
-                    sprite.flip_x = Some(true);
+                    sprite.flip_x = true;
                 }
                 CharacterDirection::DownRight => {
                     anima.update(TAG_WALKING_DOWN_RIGHT);
-                    sprite.flip_x = Some(false);
+                    sprite.flip_x = false;
                 }
                 CharacterDirection::Up => {
                     anima.update(TAG_WALKING_UP);
                 }
                 CharacterDirection::UpLeft => {
                     anima.update(TAG_WALKING_UP_RIGHT);
-                    sprite.flip_x = Some(true);
+                    sprite.flip_x = true;
                 }
                 CharacterDirection::UpRight => {
                     anima.update(TAG_WALKING_UP_RIGHT);
-                    sprite.flip_x = Some(false);
+                    sprite.flip_x = false;
                 }
             },
         }
@@ -214,30 +189,26 @@ pub fn character_move(
 }
 
 pub fn play_character_sound(
-    query: Query<&bevy_3d_sprite::TextureAtlasSprite, With<Character>>,
+    query: Query<&MaterialSprite, With<Character>>,
     asset_server: Res<AssetServer>,
     audio: Res<bevy_kira_audio::Audio>,
 ) {
     if !audio.is_playing_sound() {
         for sprite in query.iter() {
-            if let Some(index) = sprite.index {
-                match index {
-                    17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => {
-                        match rand::thread_rng().gen_range(1..4) {
-                            1 => {
-                                audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
-                            }
-                            2 => {
-                                audio.play(asset_server.load("sound/barefoot_stone_02.wav"));
-                            }
-                            3 => {
-                                audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
-                            }
-                            _ => {}
-                        }
+            match sprite.index {
+                17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => match rand::thread_rng().gen_range(1..4) {
+                    1 => {
+                        audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
+                    }
+                    2 => {
+                        audio.play(asset_server.load("sound/barefoot_stone_02.wav"));
+                    }
+                    3 => {
+                        audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
                     }
                     _ => {}
-                }
+                },
+                _ => {}
             }
         }
     }

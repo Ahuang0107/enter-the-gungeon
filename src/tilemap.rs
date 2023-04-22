@@ -1,30 +1,11 @@
 use crate::model::RoomModel;
+use crate::resource::ResourceCache;
 use crate::utils;
-use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
-use std::f32::consts::PI;
 
-pub fn setup(
-    mut c: Commands,
-    asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut texture_atlases: ResMut<Assets<bevy_3d_sprite::TextureAtlas>>,
-) {
+pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     let initial_room = RoomModel::initial();
 
-    let wall_texture_atlas = texture_atlases.add(bevy_3d_sprite::TextureAtlas::from_grid(
-        asset_server.load("art/wall.png"),
-        Vec2::new(16.0, 32.0),
-        12,
-        1,
-    ));
-    let roof_texture_atlas = texture_atlases.add(bevy_3d_sprite::TextureAtlas::from_grid(
-        asset_server.load("art/roof.png"),
-        Vec2::new(16.0, 16.0),
-        6,
-        4,
-    ));
     c.spawn(SpatialBundle {
         transform: Transform {
             translation: Vec2::from(initial_room.translation()).extend(1.5),
@@ -33,37 +14,14 @@ pub fn setup(
         ..default()
     })
     .with_children(|p| {
-        p.spawn(plane_pbr_texture(
-            &mut meshes,
-            Vec2::new(320.0 / 10.0, 320.0 / 10.0),
-            &mut materials,
-            asset_server.load("art/initial_map.png"),
-            Vec3::ZERO,
-            0.0,
-        ))
-        .insert(Name::new("Ground"))
-        .with_children(|p| {
-            // p.spawn(tilt_pbr_texture(
-            //     &mut meshes,
-            //     Vec2::new(6.6, 15.1),
-            //     &mut materials,
-            //     asset_server.load("art/initial_stone_seat.png"),
-            //     Vec3::new(0.0, 12.0, 0.0),
-            //     1.0,
-            // ))
-            // .insert(NotShadowCaster::default());
-        });
         // 添加墙壁
         p.spawn(SpatialBundle::default())
             .with_children(|p| {
                 for wall_model in initial_room.walls.iter() {
                     p.spawn(utils::tilt_pbr_sprite(
-                        &mut meshes,
-                        Vec2::new(16.0 / 10.0, 32.0 / 10.0),
-                        &mut materials,
-                        wall_texture_atlas.clone(),
+                        cache.tile_16_deg_30(),
+                        cache.get_material("Wall", 0),
                         Vec2::from(wall_model.wall_translation()),
-                        0,
                     ))
                     .insert(Name::new("Wall"));
                 }
@@ -77,12 +35,9 @@ pub fn setup(
         .with_children(|p| {
             for roof_model in initial_room.roofs.iter() {
                 p.spawn(utils::plane_pbr_sprite(
-                    &mut meshes,
-                    Vec2::new(16.0 / 10.0, 16.0 / 10.0),
-                    &mut materials,
-                    roof_texture_atlas.clone(),
+                    cache.tile_16(),
+                    cache.get_material("Roof", roof_model.sprite_index()),
                     Vec2::from(roof_model.translation()),
-                    roof_model.sprite_index(),
                 ))
                 .insert(Name::new("Roof"));
             }
@@ -92,7 +47,7 @@ pub fn setup(
         p.spawn(SpriteBundle::default())
             .with_children(|p| {
                 for light_model in initial_room.lights.iter() {
-                    p.spawn(point_light(
+                    p.spawn(utils::point_light(
                         Vec2::from(light_model.translation()),
                         Color::rgba_u8(
                             light_model.color[0],
@@ -106,74 +61,4 @@ pub fn setup(
             })
             .insert(Name::new("Lights"));
     });
-}
-
-fn plane_pbr_texture(
-    meshes: &mut ResMut<Assets<Mesh>>,
-    size: Vec2,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    image: Handle<Image>,
-    pos: Vec3,
-    depth_bias: f32,
-) -> PbrBundle {
-    PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Quad::new(size))),
-        material: materials.add(StandardMaterial {
-            base_color_texture: Some(image),
-            perceptual_roughness: 0.8,
-            metallic: 0.5,
-            reflectance: 0.1,
-            alpha_mode: AlphaMode::Blend,
-            depth_bias,
-            ..default()
-        }),
-        transform: Transform {
-            translation: pos,
-            ..default()
-        },
-        ..default()
-    }
-}
-
-fn tilt_pbr_texture(
-    meshes: &mut ResMut<Assets<Mesh>>,
-    size: Vec2,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
-    image: Handle<Image>,
-    // pos.z表示的是倾斜的sprite的底部的z值，实际的z值会根据y的长度计算
-    pos: Vec3,
-    depth_bias: f32,
-) -> PbrBundle {
-    // 倾斜30度，所以需要显示的y是a的话，实际quad的y需要是2a/√3
-    let mesh_size = Vec2::new(size.x, (size.y * 2.0) / 3.0_f32.sqrt());
-    PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Quad::new(mesh_size))),
-        material: materials.add(StandardMaterial {
-            base_color_texture: Some(image),
-            perceptual_roughness: 0.8,
-            metallic: 0.5,
-            reflectance: 0.1,
-            alpha_mode: AlphaMode::Blend,
-            depth_bias,
-            ..default()
-        }),
-        transform: Transform::from_xyz(pos.x, pos.y, (size.y / 3.0_f32.sqrt()) / 2.0)
-            .with_rotation(Quat::from_rotation_x(PI / 6.0)),
-        ..default()
-    }
-}
-
-fn point_light(pos: Vec2, color: Color) -> PointLightBundle {
-    PointLightBundle {
-        point_light: PointLight {
-            color,
-            intensity: 5000.0,
-            range: 15.0,
-            radius: 5.0,
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(pos.x, pos.y, (3.2 / 3.0_f32.sqrt()) / 2.0 + 0.5),
-        ..default()
-    }
 }

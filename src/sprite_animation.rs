@@ -1,4 +1,48 @@
+use crate::resource::ResourceCache;
 use bevy::prelude::*;
+
+#[derive(Clone, Debug, Default, Component, Reflect)]
+pub struct MaterialSprite {
+    // 调整了逻辑，index对应的是cache中存储的material对应的index
+    pub tag: String,
+    pub index: usize,
+    pub flip_x: bool,
+    changed: bool,
+}
+
+impl MaterialSprite {
+    pub fn from(tag: &str, index: usize) -> Self {
+        Self {
+            tag: tag.to_string(),
+            index,
+            flip_x: false,
+            changed: true,
+        }
+    }
+}
+
+pub fn update_sprite(
+    cache: Res<ResourceCache>,
+    mut query: Query<(
+        &mut Handle<StandardMaterial>,
+        &mut Handle<Mesh>,
+        &mut MaterialSprite,
+    )>,
+) {
+    for (mut material_handle, mut mesh_handle, mut sprite) in query.iter_mut() {
+        if sprite.changed {
+            *material_handle = cache
+                .get_material(sprite.tag.as_str(), sprite.index)
+                .clone();
+            if sprite.flip_x {
+                *mesh_handle = cache.tile_24_26_deg_30_flip().clone();
+            } else {
+                *mesh_handle = cache.tile_24_26_deg_30().clone();
+            }
+            sprite.changed = false;
+        }
+    }
+}
 
 /// 切换动画的开始帧和结束帧的位置
 #[derive(Component, Reflect)]
@@ -15,6 +59,7 @@ pub struct SpriteAnimation {
     just_last: bool,
 }
 
+#[allow(dead_code)]
 impl SpriteAnimation {
     pub fn from_loop(frames_groups: &[(&'static str, &'static [usize])], interval: f32) -> Self {
         Self::from(frames_groups, interval, true)
@@ -80,10 +125,7 @@ impl SpriteAnimation {
 
 pub fn sprite_animation(
     time: Res<Time>,
-    mut query: Query<(
-        &mut SpriteAnimation,
-        &mut crate::pbr_sprite::TextureAtlasSprite,
-    )>,
+    mut query: Query<(&mut SpriteAnimation, &mut MaterialSprite)>,
 ) {
     for (mut animation, mut sprite) in &mut query {
         if animation.just_last {
@@ -92,7 +134,10 @@ pub fn sprite_animation(
         if !animation.if_finished() {
             animation.timer.tick(time.delta());
             if animation.timer.just_finished() {
-                sprite.index = animation.next_frame();
+                if let Some(index) = animation.next_frame() {
+                    sprite.index = index;
+                    sprite.changed = true;
+                }
             }
         }
     }
