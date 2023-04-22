@@ -27,6 +27,23 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                 }
             })
             .insert(Name::new("Walls"));
+
+        // 添加地板
+        p.spawn(SpatialBundle::default())
+            .with_children(|p| {
+                for (src, models) in initial_room.floor.iter() {
+                    for model in models {
+                        p.spawn(utils::plane_pbr_sprite(
+                            cache.tile_16(),
+                            cache.get_material(src, model.sprite_index()),
+                            Vec2::from(model.translation()),
+                        ))
+                        .insert(Name::new("Floor"));
+                    }
+                }
+            })
+            .insert(Name::new("Floors"));
+
         // 添加天花板
         p.spawn(SpatialBundle {
             transform: Transform::from_xyz(0.0, 0.0, 5.0),
@@ -43,6 +60,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
             }
         })
         .insert(Name::new("Roofs"));
+
         // 添加灯光
         p.spawn(SpriteBundle::default())
             .with_children(|p| {

@@ -138,17 +138,29 @@ pub fn initial_texture_atlases(
         (texture_atlas, material_set)
     }
 
-    let (floor_atlas, material_set) = initial_texture(
-        "assets/art/floor_brick.png",
+    let (atlas, material_set) = initial_texture(
+        "assets/art/floor/floor_brick.png",
         Vec2::splat(16.0),
-        3,
-        2,
+        5,
+        5,
         &mut image,
         &mut materials,
         false,
     );
-    cache.texture_atlases.insert("Floor Brick", floor_atlas);
+    cache.texture_atlases.insert("Floor Brick", atlas);
     cache.materials.insert("Floor Brick", material_set);
+
+    let (atlas, material_set) = initial_texture(
+        "assets/art/floor/carpet_blue.png",
+        Vec2::splat(16.0),
+        6,
+        3,
+        &mut image,
+        &mut materials,
+        false,
+    );
+    cache.texture_atlases.insert("Carpet Blue", atlas);
+    cache.materials.insert("Carpet Blue", material_set);
 
     let (atlas, material_set) = initial_texture(
         "assets/art/wall.png",
