@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Tileset {
     pub uid: usize,
     pub c_w: usize,

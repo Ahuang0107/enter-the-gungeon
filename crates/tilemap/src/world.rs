@@ -1,13 +1,15 @@
 use crate::{TilemapLayer, TilemapLevel, Tileset};
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TilemapWorld {
     pub levels: Vec<TilemapLevel>,
     pub tilesets: Vec<Tileset>,
 }
 
 impl TilemapWorld {
-    pub fn from_ldtk(path: &str) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn from_ldtk<P: AsRef<std::path::Path>>(
+        path: P,
+    ) -> Result<Self, Box<dyn std::error::Error>> {
         let project =
             serde_json::from_str::<ldtk::Project>(std::fs::read_to_string(path)?.as_str())?;
         let layer_tileset_id_map = project
@@ -35,17 +37,17 @@ impl TilemapWorld {
 
                 let tile_size = layer.grid_size;
 
-                let mut layer_matrix = vec![vec![0_u8; layer.c_wid]; layer.c_hei];
+                let mut layer_vec = vec![];
 
                 for tile in layer.grid_tiles.iter() {
                     let (x, y) = tile.px;
                     let x_i = x / tile_size;
                     let y_i = y / tile_size;
-                    layer_matrix[y_i][x_i] = tileset.get_index(tile.src) as u8;
+                    layer_vec.push(((x_i, y_i), tileset.get_index(tile.src)));
                 }
 
                 tilemap_level.push_layer(
-                    TilemapLayer::from_vec(*tileset_id, layer_matrix).with_name(&layer.identifier),
+                    TilemapLayer::from_vec(*tileset_id, layer_vec).with_name(&layer.identifier),
                 );
             }
             levels.push(tilemap_level);

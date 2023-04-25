@@ -1,6 +1,6 @@
 use crate::layer::TilemapLayer;
 
-#[derive(Debug)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TilemapLevel {
     pub c_w: usize,
     pub c_h: usize,
@@ -18,8 +18,6 @@ impl TilemapLevel {
         }
     }
     pub fn push_layer(&mut self, layer: TilemapLayer) {
-        assert_eq!(layer.c_w, self.c_w);
-        assert_eq!(layer.c_h, self.c_h);
         self.layers.push(layer);
     }
 }
