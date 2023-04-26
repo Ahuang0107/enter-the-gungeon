@@ -97,13 +97,34 @@ impl TilemapWorld {
                                 layer_vec.push((x_i, y_i, tileset.get_index(tile.src)));
                             }
 
-                            tilemap_room.push_tiles_layer(TilesLayer::new(
-                                (tile_size as f32, tile_size as f32),
-                                columns,
-                                rows,
-                                layer_vec,
-                                &tileset.identifier,
-                            ));
+                            if layer.identifier == "Wall" {
+                                let columns = tileset.c_wid;
+                                layer_vec = layer_vec
+                                    .iter()
+                                    .filter_map(|(x, y, index)| {
+                                        if *index > columns {
+                                            Some((*x, *y, index - columns))
+                                        } else {
+                                            None
+                                        }
+                                    })
+                                    .collect::<Vec<(usize, usize, usize)>>();
+                                tilemap_room.push_tiles_layer(TilesLayer::new(
+                                    (tile_size as f32, (tile_size * 2) as f32),
+                                    columns,
+                                    rows / 2,
+                                    layer_vec,
+                                    &tileset.identifier,
+                                ));
+                            } else {
+                                tilemap_room.push_tiles_layer(TilesLayer::new(
+                                    (tile_size as f32, tile_size as f32),
+                                    columns,
+                                    rows,
+                                    layer_vec,
+                                    &tileset.identifier,
+                                ));
+                            }
                         }
                     }
                 }
@@ -117,6 +138,8 @@ impl TilemapWorld {
             .iter()
             .map(|tileset| {
                 // 这里为了配合项目需要一点小trick，墙壁的贴图并不是正方形的，需要做一个合并操作
+                // TODO 考虑到不是只有两层高的普通墙壁一种场景，还可能有四层高的带壁炉的墙壁的场景
+                //  因为目前根据ldtk生成地图只是临时方案，之后会改成程序随机生成，这里wall的问题也会迎刃而解，所以先用这个trick没有问题
                 if tileset.identifier == "Wall" {
                     Tileset::new(
                         &tileset.identifier,
