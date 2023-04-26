@@ -1,8 +1,11 @@
-use bevy::prelude::*;
 use std::f32::consts::PI;
 
-/// 墙壁等倾斜等sprite
-pub fn tilt_pbr_sprite(
+use bevy::prelude::*;
+
+use crate::resource::{SCALE_RATIO, TILE_WALL_HEIGHT_PX};
+
+/// wall tile
+pub fn tile_wall_sprite(
     mesh: &Handle<Mesh>,
     material: &Handle<StandardMaterial>,
     pos: Vec2,
@@ -10,12 +13,17 @@ pub fn tilt_pbr_sprite(
     PbrBundle {
         mesh: mesh.clone(),
         material: material.clone(),
-        transform: Transform::from_xyz(pos.x, pos.y, (3.2 / 3.0_f32.sqrt()) / 2.0)
-            .with_rotation(Quat::from_rotation_x(PI / 6.0)),
+        transform: Transform::from_xyz(
+            pos.x,
+            pos.y,
+            (SCALE_RATIO * TILE_WALL_HEIGHT_PX / 3.0_f32.sqrt()) / 2.0,
+        )
+        .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
     }
 }
 
+/// floor | roof tile
 pub fn plane_pbr_sprite(
     mesh: &Handle<Mesh>,
     material: &Handle<StandardMaterial>,
@@ -33,13 +41,13 @@ pub fn point_light(pos: Vec2, color: Color) -> PointLightBundle {
     PointLightBundle {
         point_light: PointLight {
             color,
-            intensity: 5000.0,
-            range: 15.0,
+            intensity: 1000.0,
+            range: 50.0,
             radius: 5.0,
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_xyz(pos.x, pos.y, (3.2 / 3.0_f32.sqrt()) / 2.0 + 0.5),
+        transform: Transform::from_xyz(pos.x, pos.y, 4.0),
         ..default()
     }
 }

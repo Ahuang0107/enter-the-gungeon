@@ -363,10 +363,10 @@ impl RoomModel {
             lights: vec![
                 LightModel::from_pos(-9, 10),
                 LightModel::from_pos(8, 10),
-                LightModel::from(-10, -10, [255, 128, 50, 229]),
-                LightModel::from(9, -10, [200, 200, 0, 229]),
+                LightModel::from_pos(-10, -10),
+                LightModel::from_pos(9, -10),
                 // TODO 房间中直接照亮地板的光需要提升亮度到100000，高度到5，范围到50，颜色偏红(255,154,154)
-                LightModel::from_pos(-2, 1),
+                // LightModel::from(-2, 1, [255, 154, 154, 229]),
             ],
         }
     }

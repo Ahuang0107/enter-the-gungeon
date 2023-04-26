@@ -1,8 +1,11 @@
-use bevy::prelude::*;
-use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use std::collections::HashMap;
 
-const SCALE_RATIO: f32 = 0.1;
+use bevy::prelude::*;
+use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
+
+pub const SCALE_RATIO: f32 = 0.1;
+pub const TILE_WALL_WIDTH_PX: f32 = 16.0;
+pub const TILE_WALL_HEIGHT_PX: f32 = 16.0;
 
 #[derive(Resource, Default)]
 pub struct ResourceCache {
@@ -123,8 +126,8 @@ pub fn initial_texture_atlases(
                 } else {
                     materials.add(StandardMaterial {
                         base_color_texture: Some(sub_image_handle.clone()),
-                        perceptual_roughness: 0.8,
-                        metallic: 0.5,
+                        perceptual_roughness: 0.9,
+                        metallic: 0.0,
                         reflectance: 0.1,
                         alpha_mode: AlphaMode::Blend,
                         depth_bias: 1.0,

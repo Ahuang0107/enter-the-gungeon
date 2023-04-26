@@ -1,7 +1,8 @@
+use bevy::prelude::*;
+
 use crate::model::RoomModel;
 use crate::resource::ResourceCache;
 use crate::utils;
-use bevy::prelude::*;
 
 pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     let initial_room = RoomModel::initial();
@@ -18,7 +19,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
         p.spawn(SpatialBundle::default())
             .with_children(|p| {
                 for wall_model in initial_room.walls.iter() {
-                    p.spawn(utils::tilt_pbr_sprite(
+                    p.spawn(utils::tile_wall_sprite(
                         cache.tile_16_deg_30(),
                         cache.get_material("Wall", 0),
                         Vec2::from(wall_model.wall_translation()),
@@ -64,6 +65,15 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
         // 添加灯光
         p.spawn(SpriteBundle::default())
             .with_children(|p| {
+                p.spawn(DirectionalLightBundle {
+                    directional_light: DirectionalLight {
+                        illuminance: 40000.0,
+                        color: Color::rgba_u8(255, 172, 172, 172),
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(Name::new("Global Light"));
                 for light_model in initial_room.lights.iter() {
                     p.spawn(utils::point_light(
                         Vec2::from(light_model.translation()),
