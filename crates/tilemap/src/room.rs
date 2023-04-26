@@ -1,19 +1,15 @@
 use crate::layer::TilemapLayer;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct TilemapLevel {
-    pub c_w: usize,
-    pub c_h: usize,
-    pub tile_size: usize,
+pub struct TilemapRoom {
+    pub offset: (f32, f32),
     pub layers: Vec<TilemapLayer>,
 }
 
-impl TilemapLevel {
-    pub fn new(c_w: usize, c_h: usize, tile_size: usize) -> Self {
+impl TilemapRoom {
+    pub fn new(x: f32, y: f32) -> Self {
         Self {
-            c_w,
-            c_h,
-            tile_size,
+            offset: (x, y),
             layers: vec![],
         }
     }

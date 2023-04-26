@@ -1,8 +1,8 @@
-use crate::{TilemapLayer, TilemapLevel, Tileset};
+use crate::{TilemapLayer, TilemapRoom, Tileset};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TilemapWorld {
-    pub levels: Vec<TilemapLevel>,
+    pub levels: Vec<TilemapRoom>,
     pub tilesets: Vec<Tileset>,
 }
 
@@ -24,13 +24,11 @@ impl TilemapWorld {
             .iter()
             .map(|tileset| (tileset.uid, tileset))
             .collect::<std::collections::HashMap<usize, &ldtk::TilesetDefinition>>();
-        let mut levels: Vec<TilemapLevel> = vec![];
+        let mut levels: Vec<TilemapRoom> = vec![];
         for level in project.levels.iter() {
-            let mut tilemap_level = TilemapLevel::new(
-                level.px_wid / project.default_grid_size,
-                level.px_hei / project.default_grid_size,
-                project.default_grid_size,
-            );
+            let columns = level.px_wid / project.default_grid_size;
+            let rows = level.px_hei / project.default_grid_size;
+            let mut tilemap_room = TilemapRoom::new(level.world_x as f32, level.world_y as f32);
             for layer in level.layer_instances.iter() {
                 let tileset_id = layer_tileset_id_map.get(&layer.layer_def_uid).unwrap();
                 let &tileset = tileset_map.get(tileset_id).unwrap();
@@ -43,14 +41,18 @@ impl TilemapWorld {
                     let (x, y) = tile.px;
                     let x_i = x / tile_size;
                     let y_i = y / tile_size;
-                    layer_vec.push(((x_i, y_i), tileset.get_index(tile.src)));
+                    layer_vec.push((x_i, y_i, tileset.get_index(tile.src)));
                 }
 
-                tilemap_level.push_layer(
-                    TilemapLayer::from_vec(*tileset_id, layer_vec).with_name(&layer.identifier),
-                );
+                tilemap_room.push_layer(TilemapLayer::new(
+                    (tile_size as f32, tile_size as f32),
+                    columns,
+                    rows,
+                    layer_vec,
+                    &tileset.identifier,
+                ));
             }
-            levels.push(tilemap_level);
+            levels.push(tilemap_room);
         }
         Ok(Self {
             levels,

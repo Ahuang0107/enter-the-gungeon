@@ -19,6 +19,7 @@ pub struct Definitions {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LayerDefinition {
     pub uid: usize,
+    pub identifier: String,
     #[serde(rename = "gridSize")]
     pub grid_size: usize,
     #[serde(rename = "tilesetDefUid")]
@@ -28,6 +29,7 @@ pub struct LayerDefinition {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TilesetDefinition {
     pub uid: usize,
+    pub identifier: String,
     #[serde(rename = "__cWid")]
     pub c_wid: usize,
     #[serde(rename = "__cHei")]
@@ -59,6 +61,7 @@ mod test {
     fn check() {
         let tileset = TilesetDefinition {
             uid: 0,
+            identifier: String::new(),
             c_wid: 10,
             c_hei: 2,
             tile_grid_size: 16,
@@ -77,12 +80,15 @@ mod test {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Level {
-    #[serde(rename = "identifier")]
     pub identifier: String,
     #[serde(rename = "pxWid")]
     pub px_wid: usize,
     #[serde(rename = "pxHei")]
     pub px_hei: usize,
+    #[serde(rename = "worldX")]
+    pub world_x: usize,
+    #[serde(rename = "worldY")]
+    pub world_y: usize,
     #[serde(rename = "layerInstances")]
     pub layer_instances: Vec<LayerInstance>,
 }

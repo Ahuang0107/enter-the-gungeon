@@ -1,20 +1,20 @@
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Tileset {
-    pub uid: usize,
-    pub c_w: usize,
-    pub c_h: usize,
-    pub tile_grid_size: usize,
-    pub rel_path: String,
+    pub identifier: String,
+    pub path: String,
+    pub columns: usize,
+    pub rows: usize,
+    pub tile_size: (f32, f32),
 }
 
 impl From<&ldtk::TilesetDefinition> for Tileset {
     fn from(value: &ldtk::TilesetDefinition) -> Self {
         Self {
-            uid: value.uid,
-            c_w: value.c_wid,
-            c_h: value.c_hei,
-            tile_grid_size: value.tile_grid_size,
-            rel_path: value.rel_path.clone(),
+            identifier: value.identifier.clone(),
+            path: value.rel_path.clone(),
+            columns: value.c_wid,
+            rows: value.c_hei,
+            tile_size: (value.tile_grid_size as f32, value.tile_grid_size as f32),
         }
     }
 }

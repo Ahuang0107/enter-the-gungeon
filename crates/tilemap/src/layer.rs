@@ -1,31 +1,30 @@
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TilemapLayer {
-    pub name: String,
-    pub tiles: Vec<((usize, usize), usize)>,
-    pub tileset_uid: usize,
+    pub tile_size: (f32, f32),
+    columns: usize,
+    rows: usize,
+    pub tiles: Vec<(usize, usize, usize)>,
+    pub tileset_identifier: String,
 }
 
 impl TilemapLayer {
-    pub fn from_slice(tileset_uid: usize, tiles: &[((usize, usize), usize)]) -> Self {
+    pub fn new(
+        tile_size: (f32, f32),
+        columns: usize,
+        rows: usize,
+        tiles: Vec<(usize, usize, usize)>,
+        tileset_identifier: &str,
+    ) -> Self {
         Self {
-            name: String::new(),
-            tiles: tiles.to_vec(),
-            tileset_uid,
-        }
-    }
-    pub fn from_vec(tileset_uid: usize, tiles: Vec<((usize, usize), usize)>) -> Self {
-        Self {
-            name: String::new(),
+            tile_size,
+            columns,
+            rows,
             tiles,
-            tileset_uid,
+            tileset_identifier: tileset_identifier.to_string(),
         }
-    }
-    pub fn with_name(mut self, name: &str) -> Self {
-        self.name = String::from(name);
-        self
     }
     pub fn for_each<F: FnMut((usize, usize, usize))>(&self, mut op: F) {
-        for ((x, y), index) in self.tiles.iter() {
+        for (x, y, index) in self.tiles.iter() {
             op((*x, *y, *index))
         }
     }
