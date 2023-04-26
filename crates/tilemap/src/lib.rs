@@ -1,4 +1,4 @@
-pub use layer::TilemapLayer;
+pub use layer::TilesLayer;
 pub use room::TilemapRoom;
 pub use tileset::Tileset;
 pub use world::TilemapWorld;

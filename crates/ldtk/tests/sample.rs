@@ -13,3 +13,13 @@ fn check() {
     assert_eq!(first_tile.px, (16, 0));
     assert_eq!(first_tile.src, (64, 0));
 }
+
+#[test]
+fn check_real() {
+    serde_json::from_str::<Project>(
+        std::fs::read_to_string("../../assets/level.ldtk")
+            .unwrap()
+            .as_str(),
+    )
+    .unwrap();
+}

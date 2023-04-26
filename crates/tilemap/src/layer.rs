@@ -1,5 +1,5 @@
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct TilemapLayer {
+pub struct TilesLayer {
     pub tile_size: (f32, f32),
     columns: usize,
     rows: usize,
@@ -7,7 +7,7 @@ pub struct TilemapLayer {
     pub tileset_identifier: String,
 }
 
-impl TilemapLayer {
+impl TilesLayer {
     pub fn new(
         tile_size: (f32, f32),
         columns: usize,
@@ -28,4 +28,15 @@ impl TilemapLayer {
             op((*x, *y, *index))
         }
     }
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct EntityLayer {
+    pub lights: Vec<Light>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct Light {
+    pub pos: [f32; 3],
+    pub color: [u8; 4],
 }

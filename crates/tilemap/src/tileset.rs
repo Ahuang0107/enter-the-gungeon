@@ -7,6 +7,24 @@ pub struct Tileset {
     pub tile_size: (f32, f32),
 }
 
+impl Tileset {
+    pub fn new(
+        identifier: &str,
+        path: &str,
+        tile_size: (f32, f32),
+        columns: usize,
+        rows: usize,
+    ) -> Self {
+        Self {
+            identifier: identifier.to_string(),
+            path: path.to_string(),
+            tile_size,
+            columns,
+            rows,
+        }
+    }
+}
+
 impl From<&ldtk::TilesetDefinition> for Tileset {
     fn from(value: &ldtk::TilesetDefinition) -> Self {
         Self {

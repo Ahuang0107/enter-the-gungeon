@@ -14,16 +14,25 @@ pub struct Project {
 pub struct Definitions {
     pub layers: Vec<LayerDefinition>,
     pub tilesets: Vec<TilesetDefinition>,
+    pub entities: Vec<EntityDefinition>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum LayerType {
+    Entities,
+    Tiles,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LayerDefinition {
     pub uid: usize,
     pub identifier: String,
+    #[serde(rename = "__type")]
+    pub type_: LayerType,
     #[serde(rename = "gridSize")]
     pub grid_size: usize,
     #[serde(rename = "tilesetDefUid")]
-    pub tileset_def_uid: usize,
+    pub tileset_def_uid: Option<usize>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -51,6 +60,21 @@ impl TilesetDefinition {
         let y_i = y / self.tile_grid_size;
         x_i + 1 + y_i * self.c_wid
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EntityDefinition {
+    pub uid: usize,
+    pub identifier: String,
+    #[serde(rename = "fieldDefs")]
+    pub field_defs: Vec<FieldDefinition>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FieldDefinition {
+    pub identifier: String,
+    #[serde(rename = "__type")]
+    type_: FieldType,
 }
 
 #[cfg(test)]
@@ -103,12 +127,12 @@ pub struct LayerInstance {
     pub c_hei: usize,
     #[serde(rename = "__gridSize")]
     pub grid_size: usize,
-    #[serde(rename = "__tilesetRelPath")]
-    pub tileset_rel_path: String,
     #[serde(rename = "layerDefUid")]
     pub layer_def_uid: usize,
     #[serde(rename = "gridTiles")]
     pub grid_tiles: Vec<GridTile>,
+    #[serde(rename = "entityInstances")]
+    pub entity_instances: Vec<EntityInstance>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -117,4 +141,73 @@ pub struct GridTile {
     pub px: (usize, usize),
     /// 表示在tileset中的位置，根据tile的左上角定位
     pub src: (usize, usize),
+}
+
+// TODO don know how to deserialize dynamic struct
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EntityInstance {
+    #[serde(rename = "__identifier")]
+    pub identifier: String,
+    #[serde(rename = "defUid")]
+    pub def_uid: usize,
+    pub px: (usize, usize),
+    #[serde(rename = "fieldInstances")]
+    pub field_instances: Vec<FieldInstances>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FieldInstances {
+    #[serde(rename = "__identifier")]
+    pub identifier: String,
+    #[serde(rename = "__type")]
+    type_: FieldType,
+    #[serde(rename = "__value")]
+    value: serde_json::Value,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum FieldType {
+    Color,
+    Int,
+    Float,
+}
+
+impl FieldInstances {
+    pub fn get_value(&self) -> FieldValue {
+        fn hex_to_rgb(hex: &str) -> Option<(u8, u8, u8)> {
+            if hex.len() != 6 {
+                return None;
+            }
+            let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+            let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+            let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+            Some((r, g, b))
+        }
+        match self.type_ {
+            FieldType::Color => {
+                // self.value should be #FFFFFF
+                let hex = self
+                    .value
+                    .as_str()
+                    .unwrap_or_default()
+                    .chars()
+                    .skip(1)
+                    .collect::<String>();
+                if let Some((r, g, b)) = hex_to_rgb(&hex) {
+                    FieldValue::Color { r, g, b }
+                } else {
+                    FieldValue::Color { r: 0, g: 0, b: 0 }
+                }
+            }
+            FieldType::Int => FieldValue::Int(self.value.as_u64().unwrap_or_default() as usize),
+            FieldType::Float => FieldValue::Float(self.value.as_f64().unwrap_or_default() as f32),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum FieldValue {
+    Color { r: u8, g: u8, b: u8 },
+    Int(usize),
+    Float(f32),
 }
