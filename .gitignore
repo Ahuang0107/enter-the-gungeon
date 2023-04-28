@@ -2,3 +2,5 @@
 **.lock
 .idea
 assets/level_output.json
+assets/levels/**output.json
+assets/tests

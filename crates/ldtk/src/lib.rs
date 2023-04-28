@@ -47,6 +47,14 @@ pub struct TilesetDefinition {
     pub tile_grid_size: usize,
     #[serde(rename = "relPath")]
     pub rel_path: String,
+    #[serde(rename = "savedSelections")]
+    pub saved_selections: Vec<SavedSelection>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SavedSelection {
+    pub ids: Vec<u8>,
+    pub mode: String,
 }
 
 impl TilesetDefinition {
@@ -90,6 +98,7 @@ mod test {
             c_hei: 2,
             tile_grid_size: 16,
             rel_path: String::new(),
+            saved_selections: vec![],
         };
         assert_eq!(tileset.get_index((0, 0)), 1);
         assert_eq!(tileset.get_index((16, 0)), 2);
@@ -110,9 +119,9 @@ pub struct Level {
     #[serde(rename = "pxHei")]
     pub px_hei: usize,
     #[serde(rename = "worldX")]
-    pub world_x: usize,
+    pub world_x: i32,
     #[serde(rename = "worldY")]
-    pub world_y: usize,
+    pub world_y: i32,
     #[serde(rename = "layerInstances")]
     pub layer_instances: Vec<LayerInstance>,
 }

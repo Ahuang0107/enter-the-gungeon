@@ -5,13 +5,13 @@ use bevy::prelude::*;
 pub struct MaterialSprite {
     // 调整了逻辑，index对应的是cache中存储的material对应的index
     pub tag: String,
-    pub index: usize,
+    pub index: u8,
     pub flip_x: bool,
     changed: bool,
 }
 
 impl MaterialSprite {
-    pub fn from(tag: &str, index: usize) -> Self {
+    pub fn from(tag: &str, index: u8) -> Self {
         Self {
             tag: tag.to_string(),
             index,
@@ -50,10 +50,10 @@ pub struct SpriteAnimation {
     timer: Timer,
     /// 不同 tag 对应的帧
     #[reflect(ignore)]
-    tag_frames: std::collections::HashMap<&'static str, &'static [usize]>,
+    tag_frames: std::collections::HashMap<&'static str, &'static [u8]>,
     /// 当前的 tag 和当前的帧的索引
     #[reflect(ignore)]
-    current_frame: (&'static str, usize),
+    current_frame: (&'static str, u8),
     is_loop: bool,
     finished: bool,
     just_last: bool,
@@ -61,13 +61,13 @@ pub struct SpriteAnimation {
 
 #[allow(dead_code)]
 impl SpriteAnimation {
-    pub fn from_loop(frames_groups: &[(&'static str, &'static [usize])], interval: f32) -> Self {
+    pub fn from_loop(frames_groups: &[(&'static str, &'static [u8])], interval: f32) -> Self {
         Self::from(frames_groups, interval, true)
     }
-    pub fn from_once(frames: &'static [usize], interval: f32) -> Self {
+    pub fn from_once(frames: &'static [u8], interval: f32) -> Self {
         Self::from(&[("", frames)], interval, false)
     }
-    fn from(frames: &[(&'static str, &'static [usize])], interval: f32, is_loop: bool) -> Self {
+    fn from(frames: &[(&'static str, &'static [u8])], interval: f32, is_loop: bool) -> Self {
         assert!(frames.len() > 0);
         let mut frames_map = std::collections::HashMap::new();
         for (name, frames) in frames {
@@ -92,9 +92,9 @@ impl SpriteAnimation {
         }
     }
     /// 更新到下一帧
-    pub fn next_frame(&mut self) -> Option<usize> {
+    pub fn next_frame(&mut self) -> Option<u8> {
         let &frames = self.tag_frames.get(self.current_frame.0).unwrap();
-        let len = frames.len();
+        let len = frames.len() as u8;
         let mut current_frame_index = self.current_frame.1 + 1;
         if current_frame_index >= len {
             current_frame_index = 0;
@@ -108,7 +108,7 @@ impl SpriteAnimation {
             return None;
         } else {
             self.current_frame.1 = current_frame_index;
-            Some(self.tag_frames.get(self.current_frame.0).unwrap()[self.current_frame.1])
+            Some(self.tag_frames.get(self.current_frame.0).unwrap()[self.current_frame.1 as usize])
         }
     }
     /// 判断当前是否在某一个状态

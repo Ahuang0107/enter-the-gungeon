@@ -1,7 +1,9 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
+
+use world_generator::LevelModel;
 
 pub const SCALE_RATIO: f32 = 0.1;
 pub const TILE_WALL_WIDTH_PX: f32 = 16.0;
@@ -9,39 +11,127 @@ pub const TILE_WALL_HEIGHT_PX: f32 = 16.0;
 
 #[derive(Resource, Default)]
 pub struct ResourceCache {
-    pub texture_atlases: HashMap<&'static str, HashMap<usize, Handle<Image>>>,
-    pub materials: HashMap<&'static str, HashMap<usize, Handle<StandardMaterial>>>,
-    pub meshes: HashMap<&'static str, Handle<Mesh>>,
+    pub levels: Vec<LevelModel>,
+    pub images: HashMap<String, HashMap<u8, Handle<Image>>>,
+    pub materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
+    // TODO need to des
+    pub old_meshes: HashMap<String, Handle<Mesh>>,
+    // 主要是floor和roof使用mesh
+    pub plane_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    // 主要是wall使用mesh
+    pub tilt_meshes: HashMap<(u32, u32), Handle<Mesh>>,
 }
 
 impl ResourceCache {
+    pub fn get_plane_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
+        self.plane_meshes.get(&key).unwrap()
+    }
+    pub fn get_tilt_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
+        self.plane_meshes.get(&key).unwrap()
+    }
     pub fn tile_16(&self) -> &Handle<Mesh> {
-        self.meshes.get("Tile16").unwrap()
+        self.old_meshes.get("Tile16").unwrap()
     }
     pub fn tile_16_deg_30(&self) -> &Handle<Mesh> {
-        self.meshes.get("Tile16Deg30").unwrap()
+        self.old_meshes.get("Tile16Deg30").unwrap()
     }
     pub fn tile_24_26_deg_30(&self) -> &Handle<Mesh> {
-        self.meshes.get("Tile2426Deg30").unwrap()
+        self.old_meshes.get("Tile2426Deg30").unwrap()
     }
     pub fn tile_24_26_deg_30_flip(&self) -> &Handle<Mesh> {
-        self.meshes.get("Tile2426Deg30Flip").unwrap()
+        self.old_meshes.get("Tile2426Deg30Flip").unwrap()
     }
-    pub fn get_material(&self, tag: &str, index: usize) -> &Handle<StandardMaterial> {
+    pub fn get_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.materials.get(tag).unwrap().get(&index).unwrap()
     }
 }
 
 pub fn initial_texture_atlases(
     mut cache: ResMut<ResourceCache>,
-    mut image: ResMut<Assets<Image>>,
+    mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let level = LevelModel::from("assets/levels/demo_output.json").unwrap();
+    cache.levels.push(level.clone());
+
+    // 收集所有的尺寸用来创建mesh
+    let mut plane_meshes_set = HashSet::new();
+    let mut tilt_meshes_set = HashSet::new();
+    // 加载所有的 tile image
+    for tileset in level.tilesets.iter() {
+        let mut tileset_images = HashMap::new();
+        let mut tileset_materials = HashMap::new();
+        let mut dynamic_image = image::open(format!("assets/{}", tileset.src)).unwrap();
+        let buffer = dynamic_image.as_mut_rgba8().unwrap();
+        for (index, rect) in tileset.tiles.iter() {
+            if tileset.tilt {
+                tilt_meshes_set.insert((rect.size[0], rect.size[1]));
+            } else {
+                plane_meshes_set.insert((rect.size[0], rect.size[1]));
+            }
+            let sub_buffer = image::imageops::crop(
+                buffer,
+                rect.min[0] as u32,
+                rect.min[1] as u32,
+                rect.size[0] as u32,
+                rect.size[1] as u32,
+            )
+            .to_image();
+            let sub_image = Image::new(
+                Extent3d {
+                    width: sub_buffer.width(),
+                    height: sub_buffer.height(),
+                    depth_or_array_layers: 1,
+                },
+                TextureDimension::D2,
+                sub_buffer.into_raw(),
+                TextureFormat::Rgba8UnormSrgb,
+            );
+            let sub_image_handle = images.add(sub_image);
+            let material_handle = materials.add(StandardMaterial {
+                base_color_texture: Some(sub_image_handle.clone()),
+                perceptual_roughness: 0.9,
+                metallic: 0.0,
+                reflectance: 0.1,
+                alpha_mode: AlphaMode::Blend,
+                depth_bias: 1.0,
+                ..default()
+            });
+            tileset_images.insert(*index, sub_image_handle);
+            tileset_materials.insert(*index, material_handle);
+        }
+        cache.images.insert(tileset.uuid.clone(), tileset_images);
+        cache
+            .materials
+            .insert(tileset.uuid.clone(), tileset_materials);
+    }
+
+    for (width, height) in plane_meshes_set {
+        cache.plane_meshes.insert(
+            (width, height),
+            meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+                SCALE_RATIO * width as f32,
+                SCALE_RATIO * height as f32,
+            )))),
+        );
+    }
+    for (width, height) in tilt_meshes_set {
+        cache.plane_meshes.insert(
+            (width, height),
+            meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+                SCALE_RATIO * width as f32,
+                (SCALE_RATIO * height as f32 * 2.0) / 3.0_f32.sqrt(),
+            )))),
+        );
+    }
+
     let tile_16_mesh_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::splat(
         16.0 * SCALE_RATIO,
     ))));
-    cache.meshes.insert("Tile16", tile_16_mesh_handle);
+    cache
+        .old_meshes
+        .insert(String::from("Tile16"), tile_16_mesh_handle);
     // 倾斜30度，所以需要显示的y是a的话，实际quad的y需要是2a/√3
     // TODO `3.0_f32.sqrt()`可以直接用常量
     let tile_16_deg_30_mesh_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
@@ -49,15 +139,15 @@ pub fn initial_texture_atlases(
         (32.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
     ))));
     cache
-        .meshes
-        .insert("Tile16Deg30", tile_16_deg_30_mesh_handle);
+        .old_meshes
+        .insert(String::from("Tile16Deg30"), tile_16_deg_30_mesh_handle);
     let tile_24_26_deg_30_mesh_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
         24.0 * SCALE_RATIO,
         (26.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
     ))));
     cache
-        .meshes
-        .insert("Tile2426Deg30", tile_24_26_deg_30_mesh_handle);
+        .old_meshes
+        .insert(String::from("Tile2426Deg30"), tile_24_26_deg_30_mesh_handle);
     let tile_24_26_deg_30_flip_mesh_handle = meshes.add(Mesh::from(shape::Quad {
         size: Vec2::new(
             24.0 * SCALE_RATIO,
@@ -65,9 +155,10 @@ pub fn initial_texture_atlases(
         ),
         flip: true,
     }));
-    cache
-        .meshes
-        .insert("Tile2426Deg30Flip", tile_24_26_deg_30_flip_mesh_handle);
+    cache.old_meshes.insert(
+        String::from("Tile2426Deg30Flip"),
+        tile_24_26_deg_30_flip_mesh_handle,
+    );
 
     fn initial_texture<P>(
         path: P,
@@ -78,8 +169,8 @@ pub fn initial_texture_atlases(
         materials: &mut ResMut<Assets<StandardMaterial>>,
         is_character: bool,
     ) -> (
-        HashMap<usize, Handle<Image>>,
-        HashMap<usize, Handle<StandardMaterial>>,
+        HashMap<u8, Handle<Image>>,
+        HashMap<u8, Handle<StandardMaterial>>,
     )
     where
         P: AsRef<std::path::Path>,
@@ -134,70 +225,22 @@ pub fn initial_texture_atlases(
                         ..default()
                     })
                 };
-                material_set.insert((y * columns + x) as usize, material_handle);
-                texture_atlas.insert((y * columns + x) as usize, sub_image_handle);
+                material_set.insert((y * columns + x) as u8, material_handle);
+                texture_atlas.insert((y * columns + x) as u8, sub_image_handle);
             }
         }
         (texture_atlas, material_set)
     }
 
     let (atlas, material_set) = initial_texture(
-        "assets/art/floor/floor_brick.png",
-        Vec2::splat(16.0),
-        5,
-        5,
-        &mut image,
-        &mut materials,
-        false,
-    );
-    cache.texture_atlases.insert("Floor Brick", atlas);
-    cache.materials.insert("Floor Brick", material_set);
-
-    let (atlas, material_set) = initial_texture(
-        "assets/art/floor/carpet_blue.png",
-        Vec2::splat(16.0),
-        6,
-        3,
-        &mut image,
-        &mut materials,
-        false,
-    );
-    cache.texture_atlases.insert("Carpet Blue", atlas);
-    cache.materials.insert("Carpet Blue", material_set);
-
-    let (atlas, material_set) = initial_texture(
-        "assets/art/wall.png",
-        Vec2::new(16.0, 32.0),
-        12,
-        1,
-        &mut image,
-        &mut materials,
-        false,
-    );
-    cache.texture_atlases.insert("Wall", atlas);
-    cache.materials.insert("Wall", material_set);
-
-    let (atlas, material_set) = initial_texture(
-        "assets/art/roof.png",
-        Vec2::splat(16.0),
-        6,
-        4,
-        &mut image,
-        &mut materials,
-        false,
-    );
-    cache.texture_atlases.insert("Roof", atlas);
-    cache.materials.insert("Roof", material_set);
-
-    let (atlas, material_set) = initial_texture(
         "assets/art/covict.png",
         Vec2::new(24.0, 26.0),
         13,
         12,
-        &mut image,
+        &mut images,
         &mut materials,
         true,
     );
-    cache.texture_atlases.insert("Covict", atlas);
-    cache.materials.insert("Covict", material_set);
+    cache.images.insert(String::from("Covict"), atlas);
+    cache.materials.insert(String::from("Covict"), material_set);
 }

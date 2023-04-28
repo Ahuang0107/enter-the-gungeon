@@ -30,7 +30,7 @@ const TAG_WALKING_DOWN_RIGHT: &'static str = "Walking_DownRight";
 const TAG_WALKING_UP: &'static str = "Walking_Up";
 const TAG_WALKING_UP_RIGHT: &'static str = "Walking_UpRight";
 
-const CHARACTER_FRAMES: [(&str, &[usize]); 8] = [
+const CHARACTER_FRAMES: [(&str, &[u8]); 8] = [
     (TAG_IDLE_DOWN, &[0, 1, 2, 3]),
     (TAG_IDLE_DOWN_RIGHT, &[4, 5, 6, 7]),
     (TAG_IDLE_UP, &[8, 9, 10, 11]),
