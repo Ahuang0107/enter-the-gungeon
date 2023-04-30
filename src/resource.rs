@@ -6,34 +6,26 @@ use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use world_generator::LevelModel;
 
 pub const SCALE_RATIO: f32 = 0.1;
-pub const TILE_WALL_WIDTH_PX: f32 = 16.0;
-pub const TILE_WALL_HEIGHT_PX: f32 = 16.0;
 
 #[derive(Resource, Default)]
 pub struct ResourceCache {
     pub levels: Vec<LevelModel>,
     pub images: HashMap<String, HashMap<u8, Handle<Image>>>,
-    pub materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
+    pub tile_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
     // TODO need to des
     pub old_meshes: HashMap<String, Handle<Mesh>>,
     // 主要是floor和roof使用mesh
-    pub plane_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    pub tile_plane_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     // 主要是wall使用mesh
-    pub tilt_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    pub tile_tilt_meshes: HashMap<(u32, u32), Handle<Mesh>>,
 }
 
 impl ResourceCache {
     pub fn get_plane_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
-        self.plane_meshes.get(&key).unwrap()
+        self.tile_plane_meshes.get(&key).unwrap()
     }
     pub fn get_tilt_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
-        self.plane_meshes.get(&key).unwrap()
-    }
-    pub fn tile_16(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile16").unwrap()
-    }
-    pub fn tile_16_deg_30(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile16Deg30").unwrap()
+        self.tile_plane_meshes.get(&key).unwrap()
     }
     pub fn tile_24_26_deg_30(&self) -> &Handle<Mesh> {
         self.old_meshes.get("Tile2426Deg30").unwrap()
@@ -42,7 +34,7 @@ impl ResourceCache {
         self.old_meshes.get("Tile2426Deg30Flip").unwrap()
     }
     pub fn get_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
-        self.materials.get(tag).unwrap().get(&index).unwrap()
+        self.tile_materials.get(tag).unwrap().get(&index).unwrap()
     }
 }
 
@@ -103,12 +95,13 @@ pub fn initial_texture_atlases(
         }
         cache.images.insert(tileset.uuid.clone(), tileset_images);
         cache
-            .materials
+            .tile_materials
             .insert(tileset.uuid.clone(), tileset_materials);
     }
 
+    // 汇总好的水平的tile的每种尺寸都创建mesh
     for (width, height) in plane_meshes_set {
-        cache.plane_meshes.insert(
+        cache.tile_plane_meshes.insert(
             (width, height),
             meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
                 SCALE_RATIO * width as f32,
@@ -116,8 +109,9 @@ pub fn initial_texture_atlases(
             )))),
         );
     }
+    // 汇总好的倾斜的tile的每种尺寸都创建mesh
     for (width, height) in tilt_meshes_set {
-        cache.plane_meshes.insert(
+        cache.tile_plane_meshes.insert(
             (width, height),
             meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
                 SCALE_RATIO * width as f32,
@@ -126,21 +120,6 @@ pub fn initial_texture_atlases(
         );
     }
 
-    let tile_16_mesh_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::splat(
-        16.0 * SCALE_RATIO,
-    ))));
-    cache
-        .old_meshes
-        .insert(String::from("Tile16"), tile_16_mesh_handle);
-    // 倾斜30度，所以需要显示的y是a的话，实际quad的y需要是2a/√3
-    // TODO `3.0_f32.sqrt()`可以直接用常量
-    let tile_16_deg_30_mesh_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
-        16.0 * SCALE_RATIO,
-        (32.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
-    ))));
-    cache
-        .old_meshes
-        .insert(String::from("Tile16Deg30"), tile_16_deg_30_mesh_handle);
     let tile_24_26_deg_30_mesh_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
         24.0 * SCALE_RATIO,
         (26.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
@@ -242,5 +221,7 @@ pub fn initial_texture_atlases(
         true,
     );
     cache.images.insert(String::from("Covict"), atlas);
-    cache.materials.insert(String::from("Covict"), material_set);
+    cache
+        .tile_materials
+        .insert(String::from("Covict"), material_set);
 }

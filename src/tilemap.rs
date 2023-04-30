@@ -67,7 +67,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
 
             // 添加天花板
             p.spawn(SpatialBundle {
-                transform: Transform::from_xyz(0.0, 0.0, 5.0),
+                transform: Transform::from_xyz(0.0, 0.0, (32.0 / 3.0_f32.sqrt()) * SCALE_RATIO),
                 ..default()
             })
             .with_children(|p| {
@@ -90,7 +90,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
 
             // 添加灯光
             p.spawn(SpriteBundle {
-                transform: Transform::from_xyz(0.0, 0.0, 5.0),
+                transform: Transform::from_xyz(0.0, 0.0, (32.0 / 3.0_f32.sqrt()) * SCALE_RATIO),
                 ..default()
             })
             .with_children(|p| {

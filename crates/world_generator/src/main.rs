@@ -94,17 +94,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 let y = -(entity.px.1 as f32);
                                 let mut color = None;
                                 let mut alpha = None;
+                                let mut inner = None;
                                 for field in entity.field_instances.iter() {
                                     match field.get_value() {
                                         FieldValue::Color { r, g, b } => color = Some([r, g, b]),
                                         FieldValue::Int(a) => alpha = Some(a as u8),
+                                        FieldValue::Bool(i) => inner = Some(i),
                                         _ => {}
                                     }
                                 }
                                 let color = color.unwrap();
                                 let alpha = alpha.unwrap();
+                                let inner = inner.unwrap();
                                 room.lights.push(Light {
-                                    pos: [x, y],
+                                    // TODO 这里的问题是如何让灯光低于roof但是能够让光扩散的足够开
+                                    pos: [x, y, if inner { 32.0 } else { 0.0 }],
                                     color: [color[0], color[1], color[2], alpha],
                                 })
                             }

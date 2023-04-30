@@ -31,7 +31,7 @@ pub struct Tile {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Light {
-    pub pos: [f32; 2],
+    pub pos: [f32; 3],
     pub color: [u8; 4],
 }
 

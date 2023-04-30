@@ -179,6 +179,7 @@ pub enum FieldType {
     Color,
     Int,
     Float,
+    Bool,
 }
 
 impl FieldInstances {
@@ -210,6 +211,7 @@ impl FieldInstances {
             }
             FieldType::Int => FieldValue::Int(self.value.as_u64().unwrap_or_default() as usize),
             FieldType::Float => FieldValue::Float(self.value.as_f64().unwrap_or_default() as f32),
+            FieldType::Bool => FieldValue::Bool(self.value.as_bool().unwrap_or_default()),
         }
     }
 }
@@ -219,4 +221,5 @@ pub enum FieldValue {
     Color { r: u8, g: u8, b: u8 },
     Int(usize),
     Float(f32),
+    Bool(bool),
 }

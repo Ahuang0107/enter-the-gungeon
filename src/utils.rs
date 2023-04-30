@@ -39,19 +39,21 @@ pub fn plane_pbr_sprite(
     }
 }
 
-pub fn point_light(pos: [f32; 2], color: [u8; 4]) -> PointLightBundle {
+pub fn point_light(pos: [f32; 3], color: [u8; 4]) -> PointLightBundle {
     let x = pos[0] * SCALE_RATIO;
     let y = pos[1] * SCALE_RATIO;
+    let z = pos[2] * SCALE_RATIO;
+    let intensity = if z > 0.0 { 5000.0 } else { 1000.0 };
     PointLightBundle {
         point_light: PointLight {
             color: Color::rgba_u8(color[0], color[1], color[2], color[3]),
-            intensity: 5000.0,
+            intensity,
             range: 50.0,
             radius: 5.0,
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_xyz(x, y, 0.0),
+        transform: Transform::from_xyz(x, y, z),
         ..default()
     }
 }
