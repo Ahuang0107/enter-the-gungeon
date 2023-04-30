@@ -1,4 +1,4 @@
-pub use model::{LevelModel, Rect, RoomModel, Tile, TileGroup, Tileset};
+pub use model::{LevelModel, Light, Rect, RoomModel, Tile, TileGroup, Tileset};
 
 mod model;
 

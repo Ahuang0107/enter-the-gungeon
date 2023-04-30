@@ -2,7 +2,8 @@ use std::collections::HashMap;
 
 use uuid::Uuid;
 
-use world_generator::{LevelModel, Rect, RoomModel, Tile, TileGroup};
+use ldtk::FieldValue;
+use world_generator::{LevelModel, Light, Rect, RoomModel, Tile, TileGroup};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let project = serde_json::from_str::<ldtk::Project>(
@@ -86,41 +87,67 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     ..Default::default()
                 };
                 for layer in level.layer_instances.iter() {
-                    if let Some(uuid) = layer_to_uuid.get(&layer.layer_def_uid) {
-                        let mut tile_group = TileGroup {
-                            tileset_uuid: uuid.clone(),
-                            ..Default::default()
-                        };
-                        let used_tileset = tilesets
-                            .iter()
-                            .find(|tileset| tileset.uuid == *uuid)
-                            .unwrap();
-                        for tile in layer.grid_tiles.iter() {
-                            if let Some((index, rect)) =
-                                used_tileset.tiles.iter().find(|(_, rect)| {
-                                    rect.min[0] == tile.src.0 as f32
-                                        && rect.min[1] == tile.src.1 as f32
-                                })
-                            {
-                                let width = rect.size[0];
-                                let height = rect.size[1];
-                                let x = tile.px.0 as f32 + (width / 2) as f32;
-                                let y = -(tile.px.1 as f32) - (height / 2) as f32;
-                                tile_group.tiles.push(Tile {
+                    match layer.identifier.as_str() {
+                        "Light" => {
+                            for entity in layer.entity_instances.iter() {
+                                let x = entity.px.0 as f32;
+                                let y = -(entity.px.1 as f32);
+                                let mut color = None;
+                                let mut alpha = None;
+                                for field in entity.field_instances.iter() {
+                                    match field.get_value() {
+                                        FieldValue::Color { r, g, b } => color = Some([r, g, b]),
+                                        FieldValue::Int(a) => alpha = Some(a as u8),
+                                        _ => {}
+                                    }
+                                }
+                                let color = color.unwrap();
+                                let alpha = alpha.unwrap();
+                                room.lights.push(Light {
                                     pos: [x, y],
-                                    index: *index,
+                                    color: [color[0], color[1], color[2], alpha],
                                 })
                             }
                         }
-                        match layer.identifier.as_str() {
-                            "Roof_Stone" | "Roof_Wood" => {
-                                room.roofs.push(tile_group);
+                        _ => {
+                            if let Some(uuid) = layer_to_uuid.get(&layer.layer_def_uid) {
+                                let mut tile_group = TileGroup {
+                                    tileset_uuid: uuid.clone(),
+                                    ..Default::default()
+                                };
+                                let used_tileset = tilesets
+                                    .iter()
+                                    .find(|tileset| tileset.uuid == *uuid)
+                                    .unwrap();
+                                for tile in layer.grid_tiles.iter() {
+                                    if let Some((index, rect)) =
+                                        used_tileset.tiles.iter().find(|(_, rect)| {
+                                            rect.min[0] == tile.src.0 as f32
+                                                && rect.min[1] == tile.src.1 as f32
+                                        })
+                                    {
+                                        let width = rect.size[0];
+                                        let height = rect.size[1];
+                                        let x = tile.px.0 as f32 + (width / 2) as f32;
+                                        let y = -(tile.px.1 as f32) - (height / 2) as f32;
+                                        tile_group.tiles.push(Tile {
+                                            pos: [x, y],
+                                            index: *index,
+                                        })
+                                    }
+                                }
+                                match layer.identifier.as_str() {
+                                    "Roof_Stone" | "Roof_Wood" => {
+                                        room.roofs.push(tile_group);
+                                    }
+                                    "Carpet_Blue" | "Carpet_Red" | "Floor_Brick"
+                                    | "Initial_Floor" => {
+                                        room.floors.push(tile_group);
+                                    }
+                                    "Wall" => room.walls.push(tile_group),
+                                    _ => {}
+                                }
                             }
-                            "Carpet_Blue" | "Carpet_Red" | "Floor_Brick" | "Initial_Floor" => {
-                                room.floors.push(tile_group);
-                            }
-                            "Wall" => room.walls.push(tile_group),
-                            _ => {}
                         }
                     }
                 }

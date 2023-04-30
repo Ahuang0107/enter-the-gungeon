@@ -45,7 +45,7 @@ pub fn point_light(pos: [f32; 2], color: [u8; 4]) -> PointLightBundle {
     PointLightBundle {
         point_light: PointLight {
             color: Color::rgba_u8(color[0], color[1], color[2], color[3]),
-            intensity: 1000.0,
+            intensity: 5000.0,
             range: 50.0,
             radius: 5.0,
             shadows_enabled: true,
