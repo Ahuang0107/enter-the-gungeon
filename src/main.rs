@@ -1,8 +1,10 @@
-use crate::resource::ResourceCache;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_kira_audio::prelude::*;
+
 use bevy_task_queue::TaskQueue;
+
+use crate::resource::ResourceCache;
 
 mod character;
 mod debug;
@@ -62,20 +64,20 @@ fn main() {
     app.insert_resource(TaskQueue::new());
     app.add_startup_system(setup_camera);
     app.add_system(auto_next_state);
-    // app.add_system(sprite_animation::update_sprite);
-    // app.add_system(sprite_animation::sprite_animation);
+    app.add_system(sprite_animation::update_sprite);
+    app.add_system(sprite_animation::sprite_animation);
 
     app.add_system((resource::initial_texture_atlases).in_schedule(OnEnter(AppState::Loading)));
     app.add_system((tilemap::setup).in_schedule(OnEnter(AppState::InGame)));
-    // app.add_system((character::setup).in_schedule(OnEnter(AppState::InGame)));
-    // app.add_systems(
-    //     (
-    //         character::update_character_sprite,
-    //         character::play_character_sound,
-    //         character::character_move,
-    //     )
-    //         .in_set(OnUpdate(AppState::InGame)),
-    // );
+    app.add_system((character::setup).in_schedule(OnEnter(AppState::InGame)));
+    app.add_systems(
+        (
+            character::update_character_sprite,
+            character::play_character_sound,
+            character::character_move,
+        )
+            .in_set(OnUpdate(AppState::InGame)),
+    );
 
     app.run();
 }
