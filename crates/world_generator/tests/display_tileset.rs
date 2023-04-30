@@ -1,6 +1,6 @@
 #[test]
 fn output_tileset_split_png() {
-    let level = world_generator::demo_level_model();
+    let level = world_generator::LevelModel::from("../../assets/levels/demo_output.json").unwrap();
     for tileset in level.tilesets.iter() {
         let mut dynamic_image = image::open(format!("../../assets/{}", tileset.src)).unwrap();
         let buffer = dynamic_image.as_mut_rgba8().unwrap();
@@ -13,6 +13,7 @@ fn output_tileset_split_png() {
                 rect.size[1],
             )
             .to_image();
+
             sub_buffer
                 .save(format!("../../assets/tests/{}#{}.png", tileset.uuid, index))
                 .unwrap();

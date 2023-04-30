@@ -1,4 +1,3 @@
-pub use model::assets::demo_level_model;
 pub use model::{LevelModel, Rect, RoomModel, Tile, TileGroup, Tileset};
 
 mod model;

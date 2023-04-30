@@ -5,8 +5,6 @@ use uuid::Uuid;
 use world_generator::{LevelModel, Rect, RoomModel, Tile, TileGroup};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // let buffer = std::fs::File::create("assets/levels/demo_output.json")?;
-    // serde_json::to_writer(buffer, &world_generator::demo_level_model())?;
     let project = serde_json::from_str::<ldtk::Project>(
         std::fs::read_to_string("assets/level.ldtk")?.as_str(),
     )?;
@@ -17,30 +15,48 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut tilesets = vec![];
             let mut tilesets_ref = HashMap::new();
             for tileset_def in project.defs.tilesets.iter() {
-                let size = [
-                    tileset_def.tile_grid_size as u32,
-                    tileset_def.tile_grid_size as u32,
-                ];
-                let mut tiles = HashMap::new();
-                let mut count = 0;
-                for y in 0..tileset_def.c_hei {
-                    for x in 0..tileset_def.c_wid {
-                        let min = [
-                            (x as f32) * (tileset_def.tile_grid_size as f32),
-                            (y as f32) * (tileset_def.tile_grid_size as f32),
-                        ];
-                        tiles.insert(count, Rect { min, size });
-                        count += 1;
-                    }
-                }
                 let uuid = Uuid::new_v4().to_string();
                 tilesets_ref.insert(tileset_def.uid, uuid.clone());
-                tilesets.push(world_generator::Tileset {
+                let mut tileset = world_generator::Tileset {
                     uuid: uuid.clone(),
                     src: tileset_def.rel_path.clone(),
-                    tiles,
                     ..Default::default()
-                });
+                };
+                let mut count = 0;
+                // 针对wall做一下特殊处理
+                if tileset_def.identifier == "Wall" {
+                    let size = [
+                        tileset_def.tile_grid_size as u32,
+                        (tileset_def.tile_grid_size * 2) as u32,
+                    ];
+                    tileset.tilt = true;
+                    for y in (0..tileset_def.c_hei).step_by(2) {
+                        for x in 0..tileset_def.c_wid {
+                            let min = [
+                                (x as f32) * (tileset_def.tile_grid_size as f32),
+                                (y as f32) * (tileset_def.tile_grid_size as f32),
+                            ];
+                            tileset.tiles.insert(count, Rect { min, size });
+                            count += 1;
+                        }
+                    }
+                } else {
+                    let size = [
+                        tileset_def.tile_grid_size as u32,
+                        tileset_def.tile_grid_size as u32,
+                    ];
+                    for y in 0..tileset_def.c_hei {
+                        for x in 0..tileset_def.c_wid {
+                            let min = [
+                                (x as f32) * (tileset_def.tile_grid_size as f32),
+                                (y as f32) * (tileset_def.tile_grid_size as f32),
+                            ];
+                            tileset.tiles.insert(count, Rect { min, size });
+                            count += 1;
+                        }
+                    }
+                }
+                tilesets.push(tileset);
             }
             (tilesets, tilesets_ref)
         };
@@ -80,22 +96,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .find(|tileset| tileset.uuid == *uuid)
                             .unwrap();
                         for tile in layer.grid_tiles.iter() {
-                            let (index, rect) = used_tileset
-                                .tiles
-                                .iter()
-                                .find(|(_, rect)| {
+                            if let Some((index, rect)) =
+                                used_tileset.tiles.iter().find(|(_, rect)| {
                                     rect.min[0] == tile.src.0 as f32
                                         && rect.min[1] == tile.src.1 as f32
                                 })
-                                .unwrap();
-                            let width = rect.size[0];
-                            let height = rect.size[1];
-                            let x = tile.px.0 as f32 + (width / 2) as f32;
-                            let y = -(tile.px.1 as f32) - (height / 2) as f32;
-                            tile_group.tiles.push(Tile {
-                                pos: [x, y],
-                                index: *index,
-                            })
+                            {
+                                let width = rect.size[0];
+                                let height = rect.size[1];
+                                let x = tile.px.0 as f32 + (width / 2) as f32;
+                                let y = -(tile.px.1 as f32) - (height / 2) as f32;
+                                tile_group.tiles.push(Tile {
+                                    pos: [x, y],
+                                    index: *index,
+                                })
+                            }
                         }
                         match layer.identifier.as_str() {
                             "Roof_Stone" | "Roof_Wood" => {

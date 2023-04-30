@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-pub mod assets;
-
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct LevelModel {
     pub rooms: Vec<RoomModel>,
