@@ -12,7 +12,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
         tilesets.insert(tileset.uuid.clone(), tileset.clone());
     }
 
-    for room in level.rooms.iter() {
+    for (index, room) in level.rooms.iter().enumerate() {
         let world_x = room.world_pos[0] * SCALE_RATIO;
         let world_y = room.world_pos[1] * SCALE_RATIO;
         c.spawn(SpatialBundle {
@@ -22,7 +22,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
             },
             ..default()
         })
-        .insert(Name::new("Room"))
+        .insert(Name::new(format!("Room{index:#02x?}")))
         .with_children(|p| {
             // 添加墙壁
             p.spawn(SpatialBundle::default())
