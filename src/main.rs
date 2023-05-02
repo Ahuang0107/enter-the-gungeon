@@ -1,3 +1,4 @@
+use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
 use bevy_kira_audio::prelude::*;
@@ -52,6 +53,10 @@ fn main() {
     app.add_plugins(
         DefaultPlugins
             .set(ImagePlugin::default_nearest())
+            .set(LogPlugin {
+                filter: String::from("wgpu=error,enter_the_gungeon=debug,symphonia_core=warn"),
+                ..default()
+            })
             .set(WindowPlugin {
                 primary_window: Some(Window {
                     present_mode: PresentMode::AutoNoVsync,
