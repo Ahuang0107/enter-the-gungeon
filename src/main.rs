@@ -11,11 +11,15 @@ mod debug;
 mod resource;
 mod sprite_animation;
 mod tilemap;
+mod title;
 mod utils;
+
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(States, PartialEq, Eq, Debug, Clone, Hash, Default, Reflect)]
 pub enum AppState {
     #[default]
+    Title,
     Loading,
     InGame,
 }
@@ -67,7 +71,12 @@ fn main() {
     app.add_system(sprite_animation::update_sprite);
     app.add_system(sprite_animation::sprite_animation);
 
+    app.add_system((title::setup).in_schedule(OnEnter(AppState::Title)));
+    app.add_system((title::detect_start).in_set(OnUpdate(AppState::Title)));
+    app.add_system((title::dismount).in_schedule(OnExit(AppState::Title)));
+
     app.add_system((resource::initial_texture_atlases).in_schedule(OnEnter(AppState::Loading)));
+
     app.add_system((tilemap::setup).in_schedule(OnEnter(AppState::InGame)));
     app.add_system((character::setup).in_schedule(OnEnter(AppState::InGame)));
     app.add_systems(
