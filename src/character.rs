@@ -1,10 +1,12 @@
-use crate::resource::ResourceCache;
-use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
+use std::f32::consts::PI;
+
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
-use std::f32::consts::PI;
+
+use crate::resource::ResourceCache;
+use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 
 #[derive(PartialEq)]
 pub enum CharacterAction {
@@ -125,8 +127,9 @@ pub fn update_character_sprite(
 pub fn character_move(
     mut query: Query<(&mut Transform, &mut Character)>,
     keyboard: Res<Input<KeyCode>>,
+    time: Res<Time>,
 ) {
-    let speed = 0.07_f32;
+    let speed = time.delta_seconds() * 8.0;
     const RATIO: f32 = std::f32::consts::SQRT_2 / 2.0;
 
     for (mut t, mut char) in query.iter_mut() {
