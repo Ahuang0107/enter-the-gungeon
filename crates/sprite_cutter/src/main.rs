@@ -9,6 +9,34 @@ fn main() {
     let mut img = open("assets/art/character/The Marine.png").unwrap();
 
     // for (index, sub) in vec![
+    //     take(&mut img, (496, 39), (19, 19)),
+    //     take(&mut img, (515, 39), (19, 19)),
+    //     take(&mut img, (534, 39), (19, 19)),
+    //     take(&mut img, (553, 39), (19, 19)),
+    // ]
+    // .into_iter()
+    // .map(|i| scale_to(i, 32, 32))
+    // .enumerate()
+    // {
+    //     sub.save(format!("assets/tests/characters/idle-front-{index}.png"))
+    //         .unwrap();
+    // }
+
+    for (index, sub) in vec![
+        take(&mut img, (496, 39), (19, 19)),
+        take(&mut img, (515, 39), (19, 19)),
+        take(&mut img, (534, 39), (19, 19)),
+        take(&mut img, (553, 39), (19, 19)),
+    ]
+    .into_iter()
+    .map(|i| scale_to(i, 32, 32))
+    .enumerate()
+    {
+        sub.save(format!("assets/tests/characters/idle-front-{index}.png"))
+            .unwrap();
+    }
+
+    // for (index, sub) in vec![
     //     take(&mut img, (628, 150), (17, 20)),
     //     take(&mut img, (645, 150), (17, 20)),
     //     take(&mut img, (662, 150), (18, 20)),
@@ -23,22 +51,6 @@ fn main() {
     //     sub.save(format!("assets/tests/characters/walking-front-{index}.png"))
     //         .unwrap();
     // }
-
-    for (index, sub) in vec![
-        take(&mut img, (628, 150), (17, 20)),
-        take(&mut img, (645, 150), (17, 20)),
-        take(&mut img, (662, 150), (18, 20)),
-        take(&mut img, (680, 150), (17, 20)),
-        take(&mut img, (698, 150), (17, 20)),
-        take(&mut img, (715, 150), (17, 20)),
-    ]
-    .into_iter()
-    .map(|i| scale_to(i, 32, 32))
-    .enumerate()
-    {
-        sub.save(format!("assets/tests/characters/walking-front-{index}.png"))
-            .unwrap();
-    }
 }
 
 fn take(
