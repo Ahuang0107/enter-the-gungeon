@@ -99,7 +99,7 @@ fn main() {
 fn setup_camera(mut c: Commands) {
     c.spawn(Camera3dBundle {
         projection: OrthographicProjection { ..default() }.into(),
-        transform: Transform::from_xyz(0.0, 0.0, 20.0).with_scale(Vec3::splat(0.025)),
+        transform: Transform::from_xyz(0.0, 0.0, 20.0).with_scale(Vec3::splat(0.04)),
         ..default()
     });
 }

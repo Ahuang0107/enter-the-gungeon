@@ -105,7 +105,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
 
     c.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
-            illuminance: 20000.0,
+            illuminance: 13000.0,
             color: Color::rgba_u8(255, 172, 172, 172),
             ..default()
         },
