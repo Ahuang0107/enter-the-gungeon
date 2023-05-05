@@ -84,8 +84,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             for level in project.levels.iter() {
                 let mut room = RoomModel {
                     world_pos: [level.world_x as f32, (-level.world_y) as f32],
+                    size: [level.px_wid as u32, level.px_hei as u32],
                     ..Default::default()
                 };
+                let mut walkable_area = vec![];
                 for layer in level.layer_instances.iter() {
                     match layer.identifier.as_str() {
                         "Light" => {
@@ -137,7 +139,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         tile_group.tiles.push(Tile {
                                             pos: [x, y],
                                             index: *index,
-                                        })
+                                        });
+                                        match layer.identifier.as_str() {
+                                            "Carpet_Blue" | "Carpet_Red" | "Floor_Brick"
+                                            | "Initial_Floor" => walkable_area.push(Rect {
+                                                min: [tile.px.0 as f32, -(tile.px.1 as f32)],
+                                                size: [width, height],
+                                            }),
+                                            _ => {}
+                                        }
                                     }
                                 }
                                 match layer.identifier.as_str() {
@@ -155,6 +165,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                     }
                 }
+                room.walkable_area = walkable_area;
                 rooms.push(room);
             }
             rooms

@@ -11,10 +11,21 @@ pub struct RoomModel {
     /// 这里的坐标是根据room的左上角位置计算的
     /// 同时也需要注意room内的tile的坐标都是以这个点作为原点配置的
     pub world_pos: [f32; 2],
+    pub size: [u32; 2],
+    pub walkable_area: Vec<Rect>,
     pub walls: Vec<TileGroup>,
     pub floors: Vec<TileGroup>,
     pub roofs: Vec<TileGroup>,
     pub lights: Vec<Light>,
+}
+
+impl RoomModel {
+    pub fn get_rect(&self) -> Rect {
+        Rect {
+            min: self.world_pos,
+            size: self.size,
+        }
+    }
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default)]
@@ -49,4 +60,13 @@ pub struct Tileset {
 pub struct Rect {
     pub min: [f32; 2],
     pub size: [u32; 2],
+}
+
+impl Rect {
+    pub fn get_max(&self) -> [f32; 2] {
+        [
+            self.min[0] + self.size[0] as f32,
+            self.min[1] - self.size[1] as f32,
+        ]
+    }
 }
