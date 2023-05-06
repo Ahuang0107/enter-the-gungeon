@@ -13,8 +13,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     }
 
     for (index, room) in level.rooms.iter().enumerate() {
-        let world_x = room.world_pos[0] * SCALE_RATIO;
-        let world_y = room.world_pos[1] * SCALE_RATIO;
+        let world_x = room.world_pos[0] as f32 * SCALE_RATIO;
+        let world_y = room.world_pos[1] as f32 * SCALE_RATIO;
         c.spawn(SpatialBundle {
             transform: Transform {
                 translation: Vec2::new(world_x, world_y).extend(1.5),
@@ -31,8 +31,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                         let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
                         for tile in tile_group.tiles.iter() {
                             let tile_info = tileset.tiles.get(&tile.index).unwrap();
-                            let width = tile_info.size[0];
-                            let height = tile_info.size[1];
+                            let width = tile_info.size[0] as u32;
+                            let height = tile_info.size[1] as u32;
                             p.spawn(utils::tile_wall_sprite(
                                 cache.get_tilt_mesh((width, height)),
                                 cache.get_material(&tile_group.tileset_uuid, tile.index),
@@ -52,8 +52,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                         let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
                         for tile in tile_group.tiles.iter() {
                             let tile_info = tileset.tiles.get(&tile.index).unwrap();
-                            let width = tile_info.size[0];
-                            let height = tile_info.size[1];
+                            let width = tile_info.size[0] as u32;
+                            let height = tile_info.size[1] as u32;
                             p.spawn(utils::plane_pbr_sprite(
                                 cache.get_plane_mesh((width, height)),
                                 cache.get_material(&tile_group.tileset_uuid, tile.index),
@@ -75,8 +75,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                     let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
                     for tile in tile_group.tiles.iter() {
                         let tile_info = tileset.tiles.get(&tile.index).unwrap();
-                        let width = tile_info.size[0];
-                        let height = tile_info.size[1];
+                        let width = tile_info.size[0] as u32;
+                        let height = tile_info.size[1] as u32;
                         p.spawn(utils::plane_pbr_sprite(
                             cache.get_plane_mesh((width, height)),
                             cache.get_material(&tile_group.tileset_uuid, tile.index),

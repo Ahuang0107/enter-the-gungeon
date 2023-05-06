@@ -63,6 +63,7 @@ fn take(
     img.sub_image(x, y, width, height).to_image()
 }
 
+#[allow(dead_code)]
 fn split(
     mut img: ImageBuffer<Rgba<u8>, Vec<u8>>,
     columns: u32,
@@ -101,6 +102,7 @@ fn scale_to(
     result
 }
 
+#[allow(dead_code)]
 fn merge_h(images: Vec<ImageBuffer<Rgba<u8>, Vec<u8>>>) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let mut width = 0;
     let mut height = 0;
@@ -122,6 +124,7 @@ fn merge_h(images: Vec<ImageBuffer<Rgba<u8>, Vec<u8>>>) -> ImageBuffer<Rgba<u8>,
     result
 }
 
+#[allow(dead_code)]
 fn merge_v(images: Vec<ImageBuffer<Rgba<u8>, Vec<u8>>>) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
     let mut width = 0;
     let mut height = 0;

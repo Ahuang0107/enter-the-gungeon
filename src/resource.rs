@@ -102,7 +102,7 @@ pub fn initial_texture_atlases(
     // 汇总好的水平的tile的每种尺寸都创建mesh
     for (width, height) in plane_meshes_set {
         cache.tile_plane_meshes.insert(
-            (width, height),
+            (width as u32, height as u32),
             meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
                 SCALE_RATIO * width as f32,
                 SCALE_RATIO * height as f32,
@@ -112,7 +112,7 @@ pub fn initial_texture_atlases(
     // 汇总好的倾斜的tile的每种尺寸都创建mesh
     for (width, height) in tilt_meshes_set {
         cache.tile_plane_meshes.insert(
-            (width, height),
+            (width as u32, height as u32),
             meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
                 SCALE_RATIO * width as f32,
                 (SCALE_RATIO * height as f32 * 2.0) / 3.0_f32.sqrt(),

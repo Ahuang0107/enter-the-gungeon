@@ -37,8 +37,8 @@ fn display_walkable_area() {
             let left = (left_top[0] - min_x) as u32;
             let top = (left_top[1] - min_y).abs() as u32;
             let right_bottom = [
-                left_top[0] + area.size[0] as f32,
-                left_top[1] - area.size[1] as f32,
+                left_top[0] + area.size[0] as i32,
+                left_top[1] - area.size[1] as i32,
             ];
             let right = (right_bottom[0] - min_x) as u32;
             let bottom = (right_bottom[1] - min_y).abs() as u32;
@@ -49,6 +49,7 @@ fn display_walkable_area() {
             }
         }
     }
+    std::fs::create_dir_all("../../assets/tests").unwrap();
     output
         .save("../../assets/tests/demo_output_walkable_area.png")
         .unwrap();

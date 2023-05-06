@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
-use crate::resource::ResourceCache;
+use crate::resource::{ResourceCache, SCALE_RATIO};
 use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 
 #[derive(PartialEq)]
@@ -53,7 +53,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     c.spawn(PbrBundle {
         mesh: cache.tile_24_26_deg_30().clone(),
         material: cache.get_material("Covict", 0).clone(),
-        transform: Transform::from_xyz(0.0, 0.0, 1.5 + (2.6 / 3.0_f32.sqrt()) / 2.0)
+        transform: Transform::from_xyz(5.0, -5.0, 1.5 + (2.6 / 3.0_f32.sqrt()) / 2.0)
             .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
     })
@@ -128,6 +128,7 @@ pub fn character_move(
     mut query: Query<(&mut Transform, &mut Character)>,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
+    cache: Res<ResourceCache>,
 ) {
     let speed = time.delta_seconds() * 8.0;
     const RATIO: f32 = std::f32::consts::SQRT_2 / 2.0;
@@ -135,48 +136,54 @@ pub fn character_move(
     for (mut t, mut char) in query.iter_mut() {
         let mut direction: Option<CharacterDirection> = None;
         let mut walking = false;
-        let mut old = t.translation;
+        let mut next_translation = t.translation;
 
         if keyboard.pressed(KeyCode::W) {
             if keyboard.pressed(KeyCode::A) {
-                old.y += speed * RATIO;
-                old.x -= speed * RATIO;
+                next_translation.y += speed * RATIO;
+                next_translation.x -= speed * RATIO;
                 direction = Some(CharacterDirection::UpLeft);
             } else if keyboard.pressed(KeyCode::D) {
-                old.y += speed * RATIO;
-                old.x += speed * RATIO;
+                next_translation.y += speed * RATIO;
+                next_translation.x += speed * RATIO;
                 direction = Some(CharacterDirection::UpRight);
             } else {
-                old.y += speed;
+                next_translation.y += speed;
                 direction = Some(CharacterDirection::Up);
             }
             walking = true;
         } else if keyboard.pressed(KeyCode::S) {
             if keyboard.pressed(KeyCode::A) {
-                old.y -= speed * RATIO;
-                old.x -= speed * RATIO;
+                next_translation.y -= speed * RATIO;
+                next_translation.x -= speed * RATIO;
                 direction = Some(CharacterDirection::DownLeft);
             } else if keyboard.pressed(KeyCode::D) {
-                old.y -= speed * RATIO;
-                old.x += speed * RATIO;
+                next_translation.y -= speed * RATIO;
+                next_translation.x += speed * RATIO;
                 direction = Some(CharacterDirection::DownRight);
             } else {
-                old.y -= speed;
+                next_translation.y -= speed;
                 direction = Some(CharacterDirection::Down);
             }
             walking = true;
         } else if keyboard.pressed(KeyCode::A) {
-            old.x -= speed;
+            next_translation.x -= speed;
             direction = Some(CharacterDirection::DownLeft);
             walking = true;
         } else if keyboard.pressed(KeyCode::D) {
-            old.x += speed;
+            next_translation.x += speed;
             direction = Some(CharacterDirection::DownRight);
             walking = true;
         }
 
         if walking {
-            t.translation = old;
+            let pos = [
+                (next_translation.x / SCALE_RATIO) as i32,
+                (next_translation.y / SCALE_RATIO) as i32,
+            ];
+            if cache.levels[0].contains(pos) {
+                t.translation = next_translation;
+            }
         }
 
         if let Some(direction) = direction {
