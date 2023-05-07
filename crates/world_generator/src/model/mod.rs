@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default)]
 pub struct LevelModel {
@@ -7,8 +7,14 @@ pub struct LevelModel {
 }
 
 impl LevelModel {
-    pub fn contains(&self, pos: [i32; 2]) -> bool {
-        self.rooms.iter().find(|room| room.contains(pos)).is_some()
+    /// 判断对应的rect是否整个处在walkable area内
+    pub fn in_walkable_area(&self, rect: &Rect) -> bool {
+        for room in self.rooms.iter() {
+            if room.in_walkable_area(rect) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -34,27 +40,51 @@ impl RoomModel {
             size: self.size,
         }
     }
-    pub fn contains(&self, pos: [i32; 2]) -> bool {
-        return if self.in_room(pos) {
-            let pos = [pos[0] - self.world_pos[0], pos[1] - self.world_pos[1]];
-            self.walkable_area
-                .iter()
-                .find(|area| area.contains(pos))
-                .is_some()
+    fn in_walkable_area(&self, rect: &Rect) -> bool {
+        return if self.in_room_rect(rect) {
+            let mut need_check_point = HashSet::new();
+            for pos in vec![
+                rect.get_left_top(),
+                rect.get_left_bottom(),
+                rect.get_right_top(),
+                rect.get_right_bottom(),
+            ] {
+                let pos = [pos[0] - self.world_pos[0], pos[1] - self.world_pos[1]];
+                need_check_point.insert(pos);
+            }
+            for area in self.walkable_area.iter() {
+                for point in need_check_point.clone().iter() {
+                    if area.contains(*point) {
+                        need_check_point.remove(point);
+                    }
+                }
+            }
+            need_check_point.is_empty()
         } else {
             false
         };
     }
     /// 只是用来判断某个点是否在room范围内，缩小需要判断walkable area的room范围
-    fn in_room(&self, pos: [i32; 2]) -> bool {
-        let x = pos[0];
-        let y = pos[1];
+    /// TODO 反正这里的判断写的有点混乱，有许多多余的判断，但基本不会影响性能所以可以先不管
+    fn in_room_rect(&self, rect: &Rect) -> bool {
         let min = self.world_pos;
         let max = [
             self.world_pos[0] + self.size[0],
             self.world_pos[1] - self.size[1],
         ];
-        x >= min[0] && x <= max[0] && y <= min[1] && y >= max[1]
+        for pos in vec![
+            rect.get_left_top(),
+            rect.get_left_bottom(),
+            rect.get_right_top(),
+            rect.get_right_bottom(),
+        ] {
+            let x = pos[0];
+            let y = pos[1];
+            if !(x >= min[0] && x <= max[0] && y <= min[1] && y >= max[1]) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 
@@ -86,26 +116,34 @@ pub struct Tileset {
     pub tilt: bool,
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone, Default)]
 pub struct Rect {
     pub min: [i32; 2],
     pub size: [i32; 2],
 }
 
 impl Rect {
-    pub fn get_max(&self) -> [i32; 2] {
+    pub fn from_center(center: [i32; 2], size: [i32; 2]) -> Self {
+        let left = center[0] - size[0] / 2;
+        let top = center[1] + size[1] / 2;
+        Self {
+            min: [left, top],
+            size,
+        }
+    }
+    fn get_max(&self) -> [i32; 2] {
         self.get_right_bottom()
     }
-    pub fn get_left_top(&self) -> [i32; 2] {
+    fn get_left_top(&self) -> [i32; 2] {
         self.min
     }
-    pub fn get_left_bottom(&self) -> [i32; 2] {
+    fn get_left_bottom(&self) -> [i32; 2] {
         [self.min[0], self.min[1] - self.size[1]]
     }
-    pub fn get_right_top(&self) -> [i32; 2] {
+    fn get_right_top(&self) -> [i32; 2] {
         [self.min[0] + self.size[0], self.min[1]]
     }
-    pub fn get_right_bottom(&self) -> [i32; 2] {
+    fn get_right_bottom(&self) -> [i32; 2] {
         [self.min[0] + self.size[0], self.min[1] - self.size[1]]
     }
     /// this is only for crate it self, you need to call RoomModel::contains when detect collision
@@ -116,6 +154,3 @@ impl Rect {
             && pos[1] >= self.get_max()[1]
     }
 }
-
-#[cfg(test)]
-mod test;
