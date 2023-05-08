@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 
-use crate::resource::{ResourceCache, SCALE_RATIO};
+use crate::resource::{ResourceCache, GRID_SIZE, SCALE_RATIO};
 use crate::utils;
 
 pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
@@ -13,8 +13,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     }
 
     for (index, room) in level.rooms.iter().enumerate() {
-        let world_x = room.world_pos[0] as f32 * SCALE_RATIO;
-        let world_y = room.world_pos[1] as f32 * SCALE_RATIO;
+        let world_x = room.world_pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
+        let world_y = room.world_pos[1] as f32 * SCALE_RATIO * GRID_SIZE;
         c.spawn(SpatialBundle {
             transform: Transform {
                 translation: Vec2::new(world_x, world_y).extend(1.5),
@@ -29,17 +29,19 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                 .with_children(|p| {
                     for tile_group in room.walls.iter() {
                         let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
-                        for tile in tile_group.tiles.iter() {
-                            let tile_info = tileset.tiles.get(&tile.index).unwrap();
-                            let width = tile_info.size[0] as u32;
-                            let height = tile_info.size[1] as u32;
-                            p.spawn(utils::tile_wall_sprite(
-                                cache.get_tilt_mesh((width, height)),
-                                cache.get_material(&tile_group.tileset_uuid, tile.index),
-                                tile.pos,
-                                height as f32,
-                            ))
-                            .insert(Name::new("Wall"));
+                        for (grid_x, col) in tile_group.tiles.iter() {
+                            for (grid_y, index) in col.iter() {
+                                let tile_info = tileset.tiles.get(index).unwrap();
+                                let width = tile_info.1[0] as u32;
+                                let height = tile_info.1[1] as u32;
+                                p.spawn(utils::tile_wall_sprite(
+                                    cache.get_tilt_mesh((width, height)),
+                                    cache.get_material(&tile_group.tileset_uuid, *index),
+                                    [*grid_x as i32, *grid_y as i32],
+                                    height as f32,
+                                ))
+                                .insert(Name::new("Wall"));
+                            }
                         }
                     }
                 })
@@ -50,16 +52,18 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                 .with_children(|p| {
                     for tile_group in room.floors.iter() {
                         let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
-                        for tile in tile_group.tiles.iter() {
-                            let tile_info = tileset.tiles.get(&tile.index).unwrap();
-                            let width = tile_info.size[0] as u32;
-                            let height = tile_info.size[1] as u32;
-                            p.spawn(utils::plane_pbr_sprite(
-                                cache.get_plane_mesh((width, height)),
-                                cache.get_material(&tile_group.tileset_uuid, tile.index),
-                                tile.pos,
-                            ))
-                            .insert(Name::new("Floor"));
+                        for (grid_x, col) in tile_group.tiles.iter() {
+                            for (grid_y, index) in col.iter() {
+                                let tile_info = tileset.tiles.get(index).unwrap();
+                                let width = tile_info.1[0] as u32;
+                                let height = tile_info.1[1] as u32;
+                                p.spawn(utils::plane_pbr_sprite(
+                                    cache.get_plane_mesh((width, height)),
+                                    cache.get_material(&tile_group.tileset_uuid, *index),
+                                    [*grid_x as i32, *grid_y as i32],
+                                ))
+                                .insert(Name::new("Floor"));
+                            }
                         }
                     }
                 })
@@ -73,16 +77,18 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
             .with_children(|p| {
                 for tile_group in room.roofs.iter() {
                     let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
-                    for tile in tile_group.tiles.iter() {
-                        let tile_info = tileset.tiles.get(&tile.index).unwrap();
-                        let width = tile_info.size[0] as u32;
-                        let height = tile_info.size[1] as u32;
-                        p.spawn(utils::plane_pbr_sprite(
-                            cache.get_plane_mesh((width, height)),
-                            cache.get_material(&tile_group.tileset_uuid, tile.index),
-                            tile.pos,
-                        ))
-                        .insert(Name::new("Roof"));
+                    for (grid_x, col) in tile_group.tiles.iter() {
+                        for (grid_y, index) in col.iter() {
+                            let tile_info = tileset.tiles.get(index).unwrap();
+                            let width = tile_info.1[0] as u32;
+                            let height = tile_info.1[1] as u32;
+                            p.spawn(utils::plane_pbr_sprite(
+                                cache.get_plane_mesh((width, height)),
+                                cache.get_material(&tile_group.tileset_uuid, *index),
+                                [*grid_x as i32, *grid_y as i32],
+                            ))
+                            .insert(Name::new("Roof"));
+                        }
                     }
                 }
             })

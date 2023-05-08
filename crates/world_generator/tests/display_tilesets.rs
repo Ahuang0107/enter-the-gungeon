@@ -1,5 +1,5 @@
 #[test]
-fn output_tileset_split_png() {
+fn display_tilesets() {
     let level = world_generator::LevelModel::from("../../assets/levels/demo_output.json").unwrap();
     std::fs::create_dir_all("../../assets/tests/tilesets").unwrap();
     for tileset in level.tilesets.iter() {
@@ -8,10 +8,10 @@ fn output_tileset_split_png() {
         for (index, rect) in tileset.tiles.iter() {
             let sub_buffer = image::imageops::crop(
                 buffer,
-                rect.min[0] as u32,
-                rect.min[1] as u32,
-                rect.size[0] as u32,
-                rect.size[1] as u32,
+                rect.0[0] as u32,
+                rect.0[1] as u32,
+                rect.1[0] as u32,
+                rect.1[1] as u32,
             )
             .to_image();
 

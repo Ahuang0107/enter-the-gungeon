@@ -40,11 +40,11 @@ pub struct TilesetDefinition {
     pub uid: usize,
     pub identifier: String,
     #[serde(rename = "__cWid")]
-    pub c_wid: usize,
+    pub c_wid: u32,
     #[serde(rename = "__cHei")]
-    pub c_hei: usize,
+    pub c_hei: u32,
     #[serde(rename = "tileGridSize")]
-    pub tile_grid_size: usize,
+    pub tile_grid_size: u32,
     #[serde(rename = "relPath")]
     pub rel_path: String,
     #[serde(rename = "savedSelections")]
@@ -57,18 +57,18 @@ pub struct SavedSelection {
     pub mode: String,
 }
 
-impl TilesetDefinition {
-    /// 根据 grid tiles 中的 src 得到在 tileset 中的 index
-    /// index 从 1 开始，因为 0 被用来表示 null
-    pub fn get_index(&self, src: (usize, usize)) -> usize {
-        let (x, y) = src;
-        assert!(x <= (self.c_wid - 1) * self.tile_grid_size);
-        assert!(y <= (self.c_hei - 1) * self.tile_grid_size);
-        let x_i = x / self.tile_grid_size;
-        let y_i = y / self.tile_grid_size;
-        x_i + 1 + y_i * self.c_wid
-    }
-}
+// impl TilesetDefinition {
+//     /// 根据 grid tiles 中的 src 得到在 tileset 中的 index
+//     /// index 从 1 开始，因为 0 被用来表示 null
+//     pub fn get_index(&self, src: (usize, usize)) -> usize {
+//         let (x, y) = src;
+//         assert!(x <= (self.c_wid - 1) * self.tile_grid_size);
+//         assert!(y <= (self.c_hei - 1) * self.tile_grid_size);
+//         let x_i = x / self.tile_grid_size;
+//         let y_i = y / self.tile_grid_size;
+//         x_i + 1 + y_i * self.c_wid
+//     }
+// }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EntityDefinition {
@@ -85,39 +85,39 @@ pub struct FieldDefinition {
     type_: FieldType,
 }
 
-#[cfg(test)]
-mod test {
-    use crate::TilesetDefinition;
-
-    #[test]
-    fn check() {
-        let tileset = TilesetDefinition {
-            uid: 0,
-            identifier: String::new(),
-            c_wid: 10,
-            c_hei: 2,
-            tile_grid_size: 16,
-            rel_path: String::new(),
-            saved_selections: vec![],
-        };
-        assert_eq!(tileset.get_index((0, 0)), 1);
-        assert_eq!(tileset.get_index((16, 0)), 2);
-        assert_eq!(tileset.get_index((32, 0)), 3);
-        assert_eq!(tileset.get_index((32, 0)), 3);
-        assert_eq!(tileset.get_index((144, 0)), 10);
-        assert_eq!(tileset.get_index((0, 16)), 11);
-        assert_eq!(tileset.get_index((16, 16)), 12);
-        assert_eq!(tileset.get_index((144, 16)), 20);
-    }
-}
+// #[cfg(test)]
+// mod test {
+//     use crate::TilesetDefinition;
+//
+//     #[test]
+//     fn check() {
+//         let tileset = TilesetDefinition {
+//             uid: 0,
+//             identifier: String::new(),
+//             c_wid: 10,
+//             c_hei: 2,
+//             tile_grid_size: 16,
+//             rel_path: String::new(),
+//             saved_selections: vec![],
+//         };
+//         assert_eq!(tileset.get_index([0, 0]), 1);
+//         assert_eq!(tileset.get_index([16, 0]), 2);
+//         assert_eq!(tileset.get_index((32, 0)), 3);
+//         assert_eq!(tileset.get_index((32, 0)), 3);
+//         assert_eq!(tileset.get_index((144, 0)), 10);
+//         assert_eq!(tileset.get_index((0, 16)), 11);
+//         assert_eq!(tileset.get_index((16, 16)), 12);
+//         assert_eq!(tileset.get_index((144, 16)), 20);
+//     }
+// }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Level {
     pub identifier: String,
     #[serde(rename = "pxWid")]
-    pub px_wid: usize,
+    pub px_wid: u32,
     #[serde(rename = "pxHei")]
-    pub px_hei: usize,
+    pub px_hei: u32,
     #[serde(rename = "worldX")]
     pub world_x: i32,
     #[serde(rename = "worldY")]
@@ -147,9 +147,9 @@ pub struct LayerInstance {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GridTile {
     /// 表示在layer中的位置，根据tile的左上角定位
-    pub px: (usize, usize),
+    pub px: [u32; 2],
     /// 表示在tileset中的位置，根据tile的左上角定位
-    pub src: (usize, usize),
+    pub src: [u32; 2],
 }
 
 // TODO don know how to deserialize dynamic struct
@@ -159,7 +159,7 @@ pub struct EntityInstance {
     pub identifier: String,
     #[serde(rename = "defUid")]
     pub def_uid: usize,
-    pub px: (usize, usize),
+    pub px: (u32, u32),
     #[serde(rename = "fieldInstances")]
     pub field_instances: Vec<FieldInstances>,
 }

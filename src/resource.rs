@@ -6,6 +6,7 @@ use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 use world_generator::LevelModel;
 
 pub const SCALE_RATIO: f32 = 0.1;
+pub const GRID_SIZE: f32 = 16.0;
 
 #[derive(Resource, Default)]
 pub struct ResourceCache {
@@ -58,16 +59,16 @@ pub fn initial_texture_atlases(
         let buffer = dynamic_image.as_mut_rgba8().unwrap();
         for (index, rect) in tileset.tiles.iter() {
             if tileset.tilt {
-                tilt_meshes_set.insert((rect.size[0], rect.size[1]));
+                tilt_meshes_set.insert((rect.1[0], rect.1[1]));
             } else {
-                plane_meshes_set.insert((rect.size[0], rect.size[1]));
+                plane_meshes_set.insert((rect.1[0], rect.1[1]));
             }
             let sub_buffer = image::imageops::crop(
                 buffer,
-                rect.min[0] as u32,
-                rect.min[1] as u32,
-                rect.size[0] as u32,
-                rect.size[1] as u32,
+                rect.0[0] as u32,
+                rect.0[1] as u32,
+                rect.1[0] as u32,
+                rect.1[1] as u32,
             )
             .to_image();
             let sub_image = Image::new(

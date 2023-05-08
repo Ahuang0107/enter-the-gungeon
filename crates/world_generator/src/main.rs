@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 use ldtk::FieldValue;
-use world_generator::{LevelModel, Light, Rect, RoomModel, Tile, TileGroup};
+use world_generator::{LevelModel, Light, RoomModel, TileGroup};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let project = serde_json::from_str::<ldtk::Project>(
@@ -25,36 +25,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 };
                 let mut count = 0;
                 // 针对wall做一下特殊处理
-                if tileset_def.identifier == "Wall" {
-                    let size = [
-                        tileset_def.tile_grid_size as i32,
-                        (tileset_def.tile_grid_size * 2) as i32,
-                    ];
-                    tileset.tilt = true;
-                    for y in (0..tileset_def.c_hei).step_by(2) {
-                        for x in 0..tileset_def.c_wid {
-                            let min = [
-                                (x as i32) * (tileset_def.tile_grid_size as i32),
-                                (y as i32) * (tileset_def.tile_grid_size as i32),
-                            ];
-                            tileset.tiles.insert(count, Rect { min, size });
-                            count += 1;
-                        }
+                let (size, y_range) = match tileset_def.identifier.as_str() {
+                    "Wall" => {
+                        tileset.tilt = true;
+                        (
+                            [tileset_def.tile_grid_size, (tileset_def.tile_grid_size * 2)],
+                            (0..tileset_def.c_hei).step_by(2),
+                        )
                     }
-                } else {
-                    let size = [
-                        tileset_def.tile_grid_size as i32,
-                        tileset_def.tile_grid_size as i32,
-                    ];
-                    for y in 0..tileset_def.c_hei {
-                        for x in 0..tileset_def.c_wid {
-                            let min = [
-                                (x as i32) * (tileset_def.tile_grid_size as i32),
-                                (y as i32) * (tileset_def.tile_grid_size as i32),
-                            ];
-                            tileset.tiles.insert(count, Rect { min, size });
-                            count += 1;
-                        }
+                    _ => (
+                        [tileset_def.tile_grid_size, tileset_def.tile_grid_size],
+                        (0..tileset_def.c_hei).step_by(1),
+                    ),
+                };
+                for y in y_range {
+                    for x in 0..tileset_def.c_wid {
+                        let min = [
+                            x * tileset_def.tile_grid_size,
+                            y * tileset_def.tile_grid_size,
+                        ];
+                        tileset.tiles.insert(count, (min, size));
+                        count += 1;
                     }
                 }
                 tilesets.push(tileset);
@@ -82,18 +73,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let rooms = {
             let mut rooms = vec![];
             for level in project.levels.iter() {
+                let size = [level.px_wid, level.px_hei];
+                let grid_size = [size[0] / 16, size[1] / 16];
+                let grid_offset = [level.world_x / 16, -level.world_y / 16];
+                let grid_offset = [grid_offset[0], grid_offset[1] - grid_size[1] as i32];
                 let mut room = RoomModel {
-                    world_pos: [level.world_x as i32, (-level.world_y) as i32],
-                    size: [level.px_wid as i32, level.px_hei as i32],
+                    world_pos: grid_offset,
+                    size: grid_size,
                     ..Default::default()
                 };
-                let mut walkable_area = vec![];
                 for layer in level.layer_instances.iter() {
                     match layer.identifier.as_str() {
                         "Light" => {
                             for entity in layer.entity_instances.iter() {
-                                let x = entity.px.0 as i32;
-                                let y = -(entity.px.1 as i32);
+                                let x = entity.px.0;
+                                let y = size[1] - entity.px.1;
+                                let grid_x = x / 16;
+                                let grid_y = y / 16;
                                 let mut color = None;
                                 let mut alpha = None;
                                 let mut inner = None;
@@ -110,7 +106,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 let inner = inner.unwrap();
                                 room.lights.push(Light {
                                     // TODO 这里的问题是如何让灯光低于roof但是能够让光扩散的足够开
-                                    pos: [x, y, if inner { 32 } else { 0 }],
+                                    pos: [grid_x, grid_y, if inner { 32 } else { 0 }],
                                     color: [color[0], color[1], color[2], alpha],
                                 })
                             }
@@ -126,46 +122,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     .find(|tileset| tileset.uuid == *uuid)
                                     .unwrap();
                                 for tile in layer.grid_tiles.iter() {
-                                    if let Some((index, rect)) =
+                                    if let Some((index, _)) =
                                         used_tileset.tiles.iter().find(|(_, rect)| {
-                                            rect.min[0] == tile.src.0 as i32
-                                                && rect.min[1] == tile.src.1 as i32
+                                            rect.0[0] == tile.src[0] && rect.0[1] == tile.src[1]
                                         })
                                     {
-                                        let width = rect.size[0];
-                                        let height = rect.size[1];
-                                        let x = tile.px.0 as i32 + (width / 2) as i32;
-                                        let y = -(tile.px.1 as i32) - (height / 2) as i32;
-                                        tile_group.tiles.push(Tile {
-                                            pos: [x, y],
-                                            index: *index,
-                                        });
-                                        match layer.identifier.as_str() {
-                                            "Carpet_Blue" | "Carpet_Red" | "Floor_Brick"
-                                            | "Initial_Floor" => walkable_area.push(Rect {
-                                                min: [tile.px.0 as i32, -(tile.px.1 as i32)],
-                                                size: [width, height],
-                                            }),
-                                            _ => {}
-                                        }
+                                        let grid_x = tile.px[0] / 16;
+                                        let grid_y = tile.px[1] / 16;
+                                        let grid_y = grid_size[1] - grid_y;
+                                        tile_group.insert(grid_x, grid_y, *index);
                                     }
                                 }
                                 match layer.identifier.as_str() {
                                     "Roof_Stone" | "Roof_Wood" => {
-                                        room.roofs.push(tile_group);
+                                        if !tile_group.tiles.is_empty() {
+                                            room.roofs.push(tile_group);
+                                        }
                                     }
                                     "Carpet_Blue" | "Carpet_Red" | "Floor_Brick"
                                     | "Initial_Floor" => {
-                                        room.floors.push(tile_group);
+                                        if !tile_group.tiles.is_empty() {
+                                            room.floors.push(tile_group);
+                                        }
                                     }
-                                    "Wall" => room.walls.push(tile_group),
+                                    "Wall" => {
+                                        if !tile_group.tiles.is_empty() {
+                                            room.walls.push(tile_group);
+                                        }
+                                    }
                                     _ => {}
                                 }
                             }
                         }
                     }
                 }
-                room.walkable_area = walkable_area;
                 rooms.push(room);
             }
             rooms

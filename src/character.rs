@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
-use crate::resource::{ResourceCache, SCALE_RATIO};
+use crate::resource::ResourceCache;
 use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 
 #[derive(PartialEq)]
@@ -49,33 +49,6 @@ pub struct Character {
     action: CharacterAction,
 }
 
-#[derive(Component, Default)]
-pub struct Collider {
-    offset: [i32; 2],
-    rect: world_generator::Rect,
-}
-
-impl Collider {
-    fn update(&mut self, translation: Vec3) {
-        let pos = [
-            (translation.x / SCALE_RATIO) as i32,
-            (translation.y / SCALE_RATIO) as i32,
-        ];
-        let size = self.rect.size;
-        let new_rect = world_generator::Rect::from_center(pos, size);
-        self.rect = new_rect;
-    }
-    fn get_rect(&self) -> world_generator::Rect {
-        world_generator::Rect {
-            min: [
-                self.rect.min[0] + self.offset[0],
-                self.rect.min[1] + self.offset[1],
-            ],
-            size: self.rect.size,
-        }
-    }
-}
-
 pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     c.spawn(PbrBundle {
         mesh: cache.tile_24_26_deg_30().clone(),
@@ -89,13 +62,6 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     .insert(Character {
         direction: CharacterDirection::Down,
         action: CharacterAction::Idle,
-    })
-    .insert(Collider {
-        rect: world_generator::Rect {
-            size: [12, 7],
-            ..Default::default()
-        },
-        offset: [0, -7],
     })
     .insert(NotShadowCaster::default())
     .insert(Name::new("Character"));
@@ -159,15 +125,14 @@ pub fn update_character_sprite(
 }
 
 pub fn character_move(
-    mut query: Query<(&mut Transform, &mut Collider, &mut Character)>,
+    mut query: Query<(&mut Transform, &mut Character)>,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
-    cache: Res<ResourceCache>,
 ) {
     let speed = time.delta_seconds() * 8.0;
     const RATIO: f32 = std::f32::consts::SQRT_2 / 2.0;
 
-    for (mut t, mut collider, mut char) in query.iter_mut() {
+    for (mut t, mut char) in query.iter_mut() {
         let mut direction: Option<CharacterDirection> = None;
         let mut walking = false;
         let mut next_translation = t.translation;
@@ -211,11 +176,7 @@ pub fn character_move(
         }
 
         if walking {
-            // TODO 这样判断会导致只有左右方向发生碰撞但是却无法上下移动
-            collider.update(next_translation);
-            if cache.levels[0].in_walkable_area(&collider.get_rect()) {
-                t.translation = next_translation;
-            }
+            t.translation = next_translation;
         }
 
         if let Some(direction) = direction {
