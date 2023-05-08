@@ -134,13 +134,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     }
                                 }
                                 match layer.identifier.as_str() {
-                                    "Roof_Stone" | "Roof_Wood" => {
+                                    "Roof" => {
                                         if !tile_group.tiles.is_empty() {
                                             room.roofs.push(tile_group);
                                         }
                                     }
-                                    "Carpet_Blue" | "Carpet_Red" | "Floor_Brick"
-                                    | "Initial_Floor" => {
+                                    "Floor" => {
                                         if !tile_group.tiles.is_empty() {
                                             room.floors.push(tile_group);
                                         }
