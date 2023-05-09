@@ -89,6 +89,7 @@ fn main() {
             character::update_character_sprite,
             character::play_character_sound,
             character::character_move,
+            character::camera_follow_character,
         )
             .in_set(OnUpdate(AppState::InGame)),
     );
@@ -98,8 +99,15 @@ fn main() {
 
 fn setup_camera(mut c: Commands) {
     c.spawn(Camera3dBundle {
-        projection: OrthographicProjection { ..default() }.into(),
-        transform: Transform::from_xyz(0.0, 0.0, 20.0).with_scale(Vec3::splat(0.04)),
+        projection: OrthographicProjection {
+            far: 10000.0,
+            ..default()
+        }
+        .into(),
+        // TODO 还不确定镜头的合适参数
+        transform: Transform::from_xyz(0.0, 200.0, 200.0)
+            .looking_to(Vec3::new(0.0, -1.0, -1.0), Vec3::Y)
+            .with_scale(Vec3::splat(0.04)),
         ..default()
     });
 }

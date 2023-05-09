@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::f32::consts::SQRT_2;
 
 use bevy::prelude::*;
 
@@ -13,11 +14,11 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     }
 
     for (index, room) in level.rooms.iter().enumerate() {
-        let world_x = room.world_pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
-        let world_y = room.world_pos[1] as f32 * SCALE_RATIO * GRID_SIZE;
+        let room_x = room.world_pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
+        let room_y = room.world_pos[1] as f32 * SCALE_RATIO * GRID_SIZE * SQRT_2;
         c.spawn(SpatialBundle {
             transform: Transform {
-                translation: Vec2::new(world_x, world_y).extend(1.5),
+                translation: Vec3::new(room_x, 0.0, -room_y),
                 ..default()
             },
             ..default()
@@ -35,10 +36,10 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                                 let width = tile_info.1[0] as u32;
                                 let height = tile_info.1[1] as u32;
                                 p.spawn(utils::tile_wall_sprite(
-                                    cache.get_tilt_mesh((width, height)),
+                                    cache.get_tile_mesh((width, height)),
                                     cache.get_material(&tile_group.tileset_uuid, *index),
                                     [*grid_x as i32, *grid_y as i32],
-                                    height as f32,
+                                    height,
                                 ))
                                 .insert(Name::new("Wall"));
                             }
@@ -57,8 +58,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                                 let tile_info = tileset.tiles.get(index).unwrap();
                                 let width = tile_info.1[0] as u32;
                                 let height = tile_info.1[1] as u32;
-                                p.spawn(utils::plane_pbr_sprite(
-                                    cache.get_plane_mesh((width, height)),
+                                p.spawn(utils::tile_floor_sprite(
+                                    cache.get_tile_mesh((width, height)),
                                     cache.get_material(&tile_group.tileset_uuid, *index),
                                     [*grid_x as i32, *grid_y as i32],
                                 ))
@@ -71,7 +72,11 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
 
             // 添加天花板
             p.spawn(SpatialBundle {
-                transform: Transform::from_xyz(0.0, 0.0, (32.0 / 3.0_f32.sqrt()) * SCALE_RATIO),
+                transform: Transform::from_xyz(
+                    0.0,
+                    32.0 * SQRT_2 * SCALE_RATIO,
+                    32.0 * SQRT_2 * SCALE_RATIO,
+                ),
                 ..default()
             })
             .with_children(|p| {
@@ -82,8 +87,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
                             let tile_info = tileset.tiles.get(index).unwrap();
                             let width = tile_info.1[0] as u32;
                             let height = tile_info.1[1] as u32;
-                            p.spawn(utils::plane_pbr_sprite(
-                                cache.get_plane_mesh((width, height)),
+                            p.spawn(utils::tile_floor_sprite(
+                                cache.get_tile_mesh((width, height)),
                                 cache.get_material(&tile_group.tileset_uuid, *index),
                                 [*grid_x as i32, *grid_y as i32],
                             ))
@@ -96,7 +101,11 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
 
             // 添加灯光
             p.spawn(SpriteBundle {
-                transform: Transform::from_xyz(0.0, 0.0, (32.0 / 3.0_f32.sqrt()) * SCALE_RATIO),
+                transform: Transform::from_xyz(
+                    0.0,
+                    32.0 * SQRT_2 * SCALE_RATIO,
+                    32.0 * SQRT_2 * SCALE_RATIO,
+                ),
                 ..default()
             })
             .with_children(|p| {
@@ -115,6 +124,8 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
             color: Color::rgba_u8(255, 172, 172, 172),
             ..default()
         },
+        transform: Transform::from_xyz(0.0, 10.0, 10.0)
+            .looking_to(Vec3::new(0.0, -1.0, -1.0), Vec3::Y),
         ..default()
     })
     .insert(Name::new("Global Light"));

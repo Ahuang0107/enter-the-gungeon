@@ -36,9 +36,9 @@ pub fn update_sprite(
                 .get_material(sprite.tag.as_str(), sprite.index)
                 .clone();
             if sprite.flip_x {
-                *mesh_handle = cache.tile_28_deg_30_flip().clone();
+                *mesh_handle = cache.get_character_mesh_flip().clone();
             } else {
-                *mesh_handle = cache.tile_28_deg_30().clone();
+                *mesh_handle = cache.get_character_mesh().clone();
             }
             sprite.changed = false;
         }

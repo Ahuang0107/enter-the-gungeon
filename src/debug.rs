@@ -1,8 +1,9 @@
-use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
+
+use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 
 pub struct DebugPlugin;
 
@@ -13,11 +14,12 @@ impl Plugin for DebugPlugin {
             .add_plugin(ScreenFrameDiagnosticsPlugin)
             .register_type::<MaterialSprite>()
             .register_type::<SpriteAnimation>()
-            .add_system(move_camera)
+            // .add_system(move_camera)
             .add_system(scroll_camera);
     }
 }
 
+#[allow(dead_code)]
 fn move_camera(
     mut camera_current: Local<Vec2>,
     mut camera_target: Local<Vec2>,

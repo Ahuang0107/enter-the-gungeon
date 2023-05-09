@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::f32::consts::SQRT_2;
 
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -52,14 +52,13 @@ pub struct Character {
 pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     let pos = cache.levels[0].brith_point;
     c.spawn(PbrBundle {
-        mesh: cache.tile_28_deg_30().clone(),
+        mesh: cache.get_character_mesh().clone(),
         material: cache.get_material("Covict", 0).clone(),
         transform: Transform::from_xyz(
             pos[0] as f32 * SCALE_RATIO * GRID_SIZE,
-            pos[1] as f32 * SCALE_RATIO * GRID_SIZE,
-            1.5 + (2.8 / 3.0_f32.sqrt()) / 2.0,
-        )
-        .with_rotation(Quat::from_rotation_x(PI / 6.0)),
+            (28 / 2) as f32 * SQRT_2 * SCALE_RATIO,
+            -pos[1] as f32 * SCALE_RATIO * GRID_SIZE * SQRT_2,
+        ),
         ..default()
     })
     .with_children(|p| {
@@ -143,53 +142,55 @@ pub fn character_move(
     time: Res<Time>,
 ) {
     let speed = time.delta_seconds() * 8.0;
-    const RATIO: f32 = std::f32::consts::SQRT_2 / 2.0;
+    const RATIO: f32 = SQRT_2 / 2.0;
 
     for (mut t, mut char) in query.iter_mut() {
         let mut direction: Option<CharacterDirection> = None;
         let mut walking = false;
-        let mut next_translation = t.translation;
+        let mut move_translation = Vec2::default();
 
         if keyboard.pressed(KeyCode::W) {
             if keyboard.pressed(KeyCode::A) {
-                next_translation.y += speed * RATIO;
-                next_translation.x -= speed * RATIO;
+                move_translation.y += speed * RATIO;
+                move_translation.x -= speed * RATIO;
                 direction = Some(CharacterDirection::UpLeft);
             } else if keyboard.pressed(KeyCode::D) {
-                next_translation.y += speed * RATIO;
-                next_translation.x += speed * RATIO;
+                move_translation.y += speed * RATIO;
+                move_translation.x += speed * RATIO;
                 direction = Some(CharacterDirection::UpRight);
             } else {
-                next_translation.y += speed;
+                move_translation.y += speed;
                 direction = Some(CharacterDirection::Up);
             }
             walking = true;
         } else if keyboard.pressed(KeyCode::S) {
             if keyboard.pressed(KeyCode::A) {
-                next_translation.y -= speed * RATIO;
-                next_translation.x -= speed * RATIO;
+                move_translation.y -= speed * RATIO;
+                move_translation.x -= speed * RATIO;
                 direction = Some(CharacterDirection::DownLeft);
             } else if keyboard.pressed(KeyCode::D) {
-                next_translation.y -= speed * RATIO;
-                next_translation.x += speed * RATIO;
+                move_translation.y -= speed * RATIO;
+                move_translation.x += speed * RATIO;
                 direction = Some(CharacterDirection::DownRight);
             } else {
-                next_translation.y -= speed;
+                move_translation.y -= speed;
                 direction = Some(CharacterDirection::Down);
             }
             walking = true;
         } else if keyboard.pressed(KeyCode::A) {
-            next_translation.x -= speed;
+            move_translation.x -= speed;
             direction = Some(CharacterDirection::DownLeft);
             walking = true;
         } else if keyboard.pressed(KeyCode::D) {
-            next_translation.x += speed;
+            move_translation.x += speed;
             direction = Some(CharacterDirection::DownRight);
             walking = true;
         }
 
         if walking {
-            t.translation = next_translation;
+            t.translation.x += move_translation.x;
+            let actual_move_z = -move_translation.y * SQRT_2;
+            t.translation.z += actual_move_z;
         }
 
         if let Some(direction) = direction {
@@ -226,6 +227,19 @@ pub fn play_character_sound(
                 },
                 _ => {}
             }
+        }
+    }
+}
+
+pub fn camera_follow_character(
+    character_query: Query<&Transform, (With<Character>, Without<Camera>)>,
+    mut camera_query: Query<&mut Transform, (With<Camera>, Without<Character>)>,
+) {
+    for mut camera_transform in camera_query.iter_mut() {
+        for character_transform in character_query.iter() {
+            camera_transform.translation.x = character_transform.translation.x;
+            camera_transform.translation.y = character_transform.translation.y + 200.0;
+            camera_transform.translation.z = character_transform.translation.z + 200.0;
         }
     }
 }

@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::f32::consts::SQRT_2;
 
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
@@ -14,10 +15,8 @@ pub struct ResourceCache {
     // 下面4个都是tilemap会用到的material和mesh
     pub tile_images: HashMap<String, HashMap<u8, Handle<Image>>>,
     pub tile_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
-    // 主要是floor和roof使用mesh
-    pub tile_plane_meshes: HashMap<(u32, u32), Handle<Mesh>>,
-    // 主要是wall使用mesh
-    pub tile_tilt_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    // 主要是tilemap使用mesh
+    pub tile_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     // char的hand相关的material和mesh
     pub char_hand_image: Handle<Image>,
     pub char_hand_material: Handle<StandardMaterial>,
@@ -31,17 +30,14 @@ pub struct ResourceCache {
 }
 
 impl ResourceCache {
-    pub fn get_plane_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
-        self.tile_plane_meshes.get(&key).unwrap()
+    pub fn get_tile_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
+        self.tile_meshes.get(&key).unwrap()
     }
-    pub fn get_tilt_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
-        self.tile_plane_meshes.get(&key).unwrap()
+    pub fn get_character_mesh(&self) -> &Handle<Mesh> {
+        self.old_meshes.get("Tile28").unwrap()
     }
-    pub fn tile_28_deg_30(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile28Deg30").unwrap()
-    }
-    pub fn tile_28_deg_30_flip(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile28Deg30Flip").unwrap()
+    pub fn get_character_mesh_flip(&self) -> &Handle<Mesh> {
+        self.old_meshes.get("Tile28Flip").unwrap()
     }
     pub fn get_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.tile_materials.get(tag).unwrap().get(&index).unwrap()
@@ -59,8 +55,7 @@ pub fn initial_texture_atlases(
     cache.levels.push(level.clone());
 
     // 收集所有的尺寸用来创建mesh
-    let mut plane_meshes_set = HashSet::new();
-    let mut tilt_meshes_set = HashSet::new();
+    let mut tile_meshes_set = HashSet::new();
     // 加载所有的 tile image
     for tileset in level.tilesets.iter() {
         let mut tileset_images = HashMap::new();
@@ -68,11 +63,7 @@ pub fn initial_texture_atlases(
         let mut dynamic_image = image::open(format!("assets/{}", tileset.src)).unwrap();
         let buffer = dynamic_image.as_mut_rgba8().unwrap();
         for (index, rect) in tileset.tiles.iter() {
-            if tileset.tilt {
-                tilt_meshes_set.insert((rect.1[0], rect.1[1]));
-            } else {
-                plane_meshes_set.insert((rect.1[0], rect.1[1]));
-            }
+            tile_meshes_set.insert((rect.1[0], rect.1[1]));
             let sub_buffer = image::imageops::crop(
                 buffer,
                 rect.0[0] as u32,
@@ -112,41 +103,28 @@ pub fn initial_texture_atlases(
             .insert(tileset.uuid.clone(), tileset_materials);
     }
 
-    // 汇总好的水平的tile的每种尺寸都创建mesh
-    for (width, height) in plane_meshes_set {
-        cache.tile_plane_meshes.insert(
+    // 汇总好的tile的每种尺寸都创建mesh
+    for (width, height) in tile_meshes_set {
+        cache.tile_meshes.insert(
             (width as u32, height as u32),
             meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
                 SCALE_RATIO * width as f32,
-                SCALE_RATIO * height as f32,
-            )))),
-        );
-    }
-    // 汇总好的倾斜的tile的每种尺寸都创建mesh
-    for (width, height) in tilt_meshes_set {
-        cache.tile_plane_meshes.insert(
-            (width as u32, height as u32),
-            meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
-                SCALE_RATIO * width as f32,
-                (SCALE_RATIO * height as f32 * 2.0) / 3.0_f32.sqrt(),
+                SCALE_RATIO * height as f32 * SQRT_2,
             )))),
         );
     }
 
     cache.old_meshes.insert(
-        String::from("Tile28Deg30"),
+        String::from("Tile28"),
         meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
             28.0 * SCALE_RATIO,
-            (28.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
+            28.0 * SCALE_RATIO * SQRT_2,
         )))),
     );
     cache.old_meshes.insert(
-        String::from("Tile28Deg30Flip"),
+        String::from("Tile28Flip"),
         meshes.add(Mesh::from(shape::Quad {
-            size: Vec2::new(
-                28.0 * SCALE_RATIO,
-                (28.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
-            ),
+            size: Vec2::new(28.0 * SCALE_RATIO, 28.0 * SCALE_RATIO * SQRT_2),
             flip: true,
         })),
     );
@@ -224,10 +202,7 @@ pub fn initial_texture_atlases(
         .insert(String::from("Covict"), material_set);
 
     cache.char_hand_mesh = meshes.add(Mesh::from(shape::Quad {
-        size: Vec2::new(
-            4.0 * SCALE_RATIO,
-            (4.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
-        ),
+        size: Vec2::new(4.0 * SCALE_RATIO, 4.0 * SCALE_RATIO * SQRT_2),
         flip: false,
     }));
     cache.char_hand_image = server.load("art/character/hand.png");

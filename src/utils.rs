@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::f32::consts::{PI, SQRT_2};
 
 use bevy::prelude::*;
 
@@ -8,52 +8,48 @@ use crate::resource::{GRID_SIZE, SCALE_RATIO};
 pub fn tile_wall_sprite(
     mesh: &Handle<Mesh>,
     material: &Handle<StandardMaterial>,
-    pos: [i32; 2],
-    height: f32,
+    relative_pos: [i32; 2],
+    height: u32,
 ) -> PbrBundle {
-    let x = pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
-    let y = (pos[1] as f32 - 0.5) * SCALE_RATIO * GRID_SIZE;
-    let z = (height * SCALE_RATIO / 3.0_f32.sqrt()) / 2.0;
+    let x = relative_pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
+    let z =
+        ((-relative_pos[1] as f32 * GRID_SIZE + (3 * height / 4) as f32) * SQRT_2) * SCALE_RATIO;
     PbrBundle {
         mesh: mesh.clone(),
         material: material.clone(),
-        transform: Transform::from_xyz(x, y, z).with_rotation(Quat::from_rotation_x(PI / 6.0)),
+        transform: Transform::from_xyz(x, (height / 2) as f32 * SQRT_2 * SCALE_RATIO, z),
         ..default()
     }
 }
 
-/// floor | roof tile
-pub fn plane_pbr_sprite(
+pub fn tile_floor_sprite(
     mesh: &Handle<Mesh>,
     material: &Handle<StandardMaterial>,
-    pos: [i32; 2],
+    relative_pos: [i32; 2],
 ) -> PbrBundle {
-    let x = pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
-    let y = pos[1] as f32 * SCALE_RATIO * GRID_SIZE;
-    let z = 0.0;
+    let x = relative_pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
+    let z = -(((relative_pos[1] as f32 * GRID_SIZE) * SQRT_2) * SCALE_RATIO);
     PbrBundle {
         mesh: mesh.clone(),
         material: material.clone(),
-        transform: Transform::from_xyz(x, y, z),
+        transform: Transform::from_xyz(x, 0.0, z).with_rotation(Quat::from_rotation_x(-PI / 2.0)),
         ..default()
     }
 }
 
 pub fn point_light(pos: [u32; 3], color: [u8; 4]) -> PointLightBundle {
     let x = pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
-    let y = pos[1] as f32 * SCALE_RATIO * GRID_SIZE;
-    let z = pos[2] as f32 * SCALE_RATIO;
-    let intensity = if z > 0.0 { 5000.0 } else { 1000.0 };
+    let z = -(pos[1] as f32 * SCALE_RATIO * GRID_SIZE * SQRT_2);
     PointLightBundle {
         point_light: PointLight {
             color: Color::rgba_u8(color[0], color[1], color[2], color[3]),
-            intensity,
+            intensity: 2000.0,
             range: 10.0,
             radius: 5.0,
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_xyz(x, y, z),
+        transform: Transform::from_xyz(x, 0.0, z),
         ..default()
     }
 }
