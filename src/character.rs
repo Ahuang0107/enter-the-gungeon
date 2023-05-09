@@ -52,15 +52,23 @@ pub struct Character {
 pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     let pos = cache.levels[0].brith_point;
     c.spawn(PbrBundle {
-        mesh: cache.tile_24_26_deg_30().clone(),
+        mesh: cache.tile_28_deg_30().clone(),
         material: cache.get_material("Covict", 0).clone(),
         transform: Transform::from_xyz(
             pos[0] as f32 * SCALE_RATIO * GRID_SIZE,
             pos[1] as f32 * SCALE_RATIO * GRID_SIZE,
-            1.5 + (2.6 / 3.0_f32.sqrt()) / 2.0,
+            1.5 + (2.8 / 3.0_f32.sqrt()) / 2.0,
         )
         .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
+    })
+    .with_children(|p| {
+        p.spawn(PbrBundle {
+            mesh: cache.char_hand_mesh.clone(),
+            material: cache.char_hand_material.clone(),
+            transform: Transform::from_xyz(7.0 * SCALE_RATIO, -4.0 * SCALE_RATIO, 0.0),
+            ..default()
+        });
     })
     .insert(MaterialSprite::from("Covict", 0))
     .insert(SpriteAnimation::from_loop(&CHARACTER_FRAMES, 0.1))

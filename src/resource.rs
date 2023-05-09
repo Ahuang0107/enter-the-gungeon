@@ -11,14 +11,23 @@ pub const GRID_SIZE: f32 = 16.0;
 #[derive(Resource, Default)]
 pub struct ResourceCache {
     pub levels: Vec<LevelModel>,
-    pub images: HashMap<String, HashMap<u8, Handle<Image>>>,
+    // 下面4个都是tilemap会用到的material和mesh
+    pub tile_images: HashMap<String, HashMap<u8, Handle<Image>>>,
     pub tile_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
-    // TODO need to des
-    pub old_meshes: HashMap<String, Handle<Mesh>>,
     // 主要是floor和roof使用mesh
     pub tile_plane_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     // 主要是wall使用mesh
     pub tile_tilt_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    // char的hand相关的material和mesh
+    pub char_hand_image: Handle<Image>,
+    pub char_hand_material: Handle<StandardMaterial>,
+    pub char_hand_mesh: Handle<Mesh>,
+    // gun相关的material和mesh
+    pub gun_images: HashMap<String, HashMap<u8, Handle<Image>>>,
+    pub gun_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
+    pub gun_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    // TODO need to des
+    pub old_meshes: HashMap<String, Handle<Mesh>>,
 }
 
 impl ResourceCache {
@@ -28,11 +37,11 @@ impl ResourceCache {
     pub fn get_tilt_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
         self.tile_plane_meshes.get(&key).unwrap()
     }
-    pub fn tile_24_26_deg_30(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile2426Deg30").unwrap()
+    pub fn tile_28_deg_30(&self) -> &Handle<Mesh> {
+        self.old_meshes.get("Tile28Deg30").unwrap()
     }
-    pub fn tile_24_26_deg_30_flip(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile2426Deg30Flip").unwrap()
+    pub fn tile_28_deg_30_flip(&self) -> &Handle<Mesh> {
+        self.old_meshes.get("Tile28Deg30Flip").unwrap()
     }
     pub fn get_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.tile_materials.get(tag).unwrap().get(&index).unwrap()
@@ -44,6 +53,7 @@ pub fn initial_texture_atlases(
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    server: Res<AssetServer>,
 ) {
     let level = LevelModel::from("assets/levels/demo_output.json").unwrap();
     cache.levels.push(level.clone());
@@ -94,7 +104,9 @@ pub fn initial_texture_atlases(
             tileset_images.insert(*index, sub_image_handle);
             tileset_materials.insert(*index, material_handle);
         }
-        cache.images.insert(tileset.uuid.clone(), tileset_images);
+        cache
+            .tile_images
+            .insert(tileset.uuid.clone(), tileset_images);
         cache
             .tile_materials
             .insert(tileset.uuid.clone(), tileset_materials);
@@ -121,23 +133,22 @@ pub fn initial_texture_atlases(
         );
     }
 
-    let tile_24_26_deg_30_mesh_handle = meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
-        24.0 * SCALE_RATIO,
-        (26.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
-    ))));
-    cache
-        .old_meshes
-        .insert(String::from("Tile2426Deg30"), tile_24_26_deg_30_mesh_handle);
-    let tile_24_26_deg_30_flip_mesh_handle = meshes.add(Mesh::from(shape::Quad {
-        size: Vec2::new(
-            24.0 * SCALE_RATIO,
-            (26.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
-        ),
-        flip: true,
-    }));
     cache.old_meshes.insert(
-        String::from("Tile2426Deg30Flip"),
-        tile_24_26_deg_30_flip_mesh_handle,
+        String::from("Tile28Deg30"),
+        meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+            28.0 * SCALE_RATIO,
+            (28.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
+        )))),
+    );
+    cache.old_meshes.insert(
+        String::from("Tile28Deg30Flip"),
+        meshes.add(Mesh::from(shape::Quad {
+            size: Vec2::new(
+                28.0 * SCALE_RATIO,
+                (28.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
+            ),
+            flip: true,
+        })),
     );
 
     fn initial_texture<P>(
@@ -147,7 +158,6 @@ pub fn initial_texture_atlases(
         rows: usize,
         images: &mut ResMut<Assets<Image>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
-        is_character: bool,
     ) -> (
         HashMap<u8, Handle<Image>>,
         HashMap<u8, Handle<StandardMaterial>>,
@@ -186,25 +196,13 @@ pub fn initial_texture_atlases(
                     TextureFormat::Rgba8UnormSrgb,
                 );
                 let sub_image_handle = images.add(sub_image);
-                let material_handle = if is_character {
-                    materials.add(StandardMaterial {
-                        base_color_texture: Some(sub_image_handle.clone()),
-                        alpha_mode: AlphaMode::Blend,
-                        unlit: true,
-                        depth_bias: 10.0,
-                        ..default()
-                    })
-                } else {
-                    materials.add(StandardMaterial {
-                        base_color_texture: Some(sub_image_handle.clone()),
-                        perceptual_roughness: 0.9,
-                        metallic: 0.0,
-                        reflectance: 0.1,
-                        alpha_mode: AlphaMode::Blend,
-                        depth_bias: 1.0,
-                        ..default()
-                    })
-                };
+                let material_handle = materials.add(StandardMaterial {
+                    base_color_texture: Some(sub_image_handle.clone()),
+                    alpha_mode: AlphaMode::Blend,
+                    unlit: true,
+                    depth_bias: 10.0,
+                    ..default()
+                });
                 material_set.insert((y * columns + x) as u8, material_handle);
                 texture_atlas.insert((y * columns + x) as u8, sub_image_handle);
             }
@@ -213,16 +211,31 @@ pub fn initial_texture_atlases(
     }
 
     let (atlas, material_set) = initial_texture(
-        "assets/art/covict.png",
-        Vec2::new(24.0, 26.0),
-        13,
-        12,
+        "assets/art/character/The Covict.png",
+        Vec2::new(28.0, 28.0),
+        9,
+        9,
         &mut images,
         &mut materials,
-        true,
     );
-    cache.images.insert(String::from("Covict"), atlas);
+    cache.tile_images.insert(String::from("Covict"), atlas);
     cache
         .tile_materials
         .insert(String::from("Covict"), material_set);
+
+    cache.char_hand_mesh = meshes.add(Mesh::from(shape::Quad {
+        size: Vec2::new(
+            4.0 * SCALE_RATIO,
+            (4.0 * SCALE_RATIO * 2.0) / 3.0_f32.sqrt(),
+        ),
+        flip: false,
+    }));
+    cache.char_hand_image = server.load("art/character/hand.png");
+    cache.char_hand_material = materials.add(StandardMaterial {
+        base_color_texture: Some(cache.char_hand_image.clone()),
+        alpha_mode: AlphaMode::Blend,
+        unlit: true,
+        depth_bias: 11.0,
+        ..default()
+    });
 }

@@ -1,5 +1,6 @@
-use crate::resource::ResourceCache;
 use bevy::prelude::*;
+
+use crate::resource::ResourceCache;
 
 #[derive(Clone, Debug, Default, Component, Reflect)]
 pub struct MaterialSprite {
@@ -35,9 +36,9 @@ pub fn update_sprite(
                 .get_material(sprite.tag.as_str(), sprite.index)
                 .clone();
             if sprite.flip_x {
-                *mesh_handle = cache.tile_24_26_deg_30_flip().clone();
+                *mesh_handle = cache.tile_28_deg_30_flip().clone();
             } else {
-                *mesh_handle = cache.tile_24_26_deg_30().clone();
+                *mesh_handle = cache.tile_28_deg_30().clone();
             }
             sprite.changed = false;
         }
