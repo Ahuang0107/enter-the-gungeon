@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
-use crate::resource::ResourceCache;
+use crate::resource::{ResourceCache, GRID_SIZE, SCALE_RATIO};
 use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 
 #[derive(PartialEq)]
@@ -50,11 +50,16 @@ pub struct Character {
 }
 
 pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
+    let pos = cache.levels[0].brith_point;
     c.spawn(PbrBundle {
         mesh: cache.tile_24_26_deg_30().clone(),
         material: cache.get_material("Covict", 0).clone(),
-        transform: Transform::from_xyz(5.0, -5.0, 1.5 + (2.6 / 3.0_f32.sqrt()) / 2.0)
-            .with_rotation(Quat::from_rotation_x(PI / 6.0)),
+        transform: Transform::from_xyz(
+            pos[0] as f32 * SCALE_RATIO * GRID_SIZE,
+            pos[1] as f32 * SCALE_RATIO * GRID_SIZE,
+            1.5 + (2.6 / 3.0_f32.sqrt()) / 2.0,
+        )
+        .with_rotation(Quat::from_rotation_x(PI / 6.0)),
         ..default()
     })
     .insert(MaterialSprite::from("Covict", 0))

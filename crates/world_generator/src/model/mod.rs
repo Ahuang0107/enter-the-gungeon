@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default, Debug)]
 pub struct LevelModel {
+    pub brith_point: [i32; 2],
     pub rooms: Vec<RoomModel>,
     pub tilesets: Vec<Tileset>,
 }

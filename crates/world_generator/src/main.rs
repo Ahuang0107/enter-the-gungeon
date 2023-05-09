@@ -10,7 +10,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::fs::read_to_string("assets/level.ldtk")?.as_str(),
     )?;
 
-    let level = {
+    let level_model = {
+        let mut level_model = LevelModel::default();
         // 将ldtk中的tileset定义提取转化成需要的结构
         let (tilesets, tilesets_ref) = {
             let mut tilesets = vec![];
@@ -84,31 +85,44 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 };
                 for layer in level.layer_instances.iter() {
                     match layer.identifier.as_str() {
-                        "Light" => {
+                        "Entity" => {
                             for entity in layer.entity_instances.iter() {
                                 let x = entity.px.0;
                                 let y = size[1] - entity.px.1;
                                 let grid_x = x / 16;
                                 let grid_y = y / 16;
-                                let mut color = None;
-                                let mut alpha = None;
-                                let mut inner = None;
-                                for field in entity.field_instances.iter() {
-                                    match field.get_value() {
-                                        FieldValue::Color { r, g, b } => color = Some([r, g, b]),
-                                        FieldValue::Int(a) => alpha = Some(a as u8),
-                                        FieldValue::Bool(i) => inner = Some(i),
-                                        _ => {}
+                                match entity.identifier.as_str() {
+                                    "Light" => {
+                                        let mut color = None;
+                                        let mut alpha = None;
+                                        let mut inner = None;
+                                        for field in entity.field_instances.iter() {
+                                            match field.get_value() {
+                                                FieldValue::Color { r, g, b } => {
+                                                    color = Some([r, g, b])
+                                                }
+                                                FieldValue::Int(a) => alpha = Some(a as u8),
+                                                FieldValue::Bool(i) => inner = Some(i),
+                                                _ => {}
+                                            }
+                                        }
+                                        let color = color.unwrap();
+                                        let alpha = alpha.unwrap();
+                                        let inner = inner.unwrap();
+                                        room.lights.push(Light {
+                                            // TODO 这里的问题是如何让灯光低于roof但是能够让光扩散的足够开
+                                            pos: [grid_x, grid_y, if inner { 32 } else { 0 }],
+                                            color: [color[0], color[1], color[2], alpha],
+                                        })
                                     }
+                                    "BrithPoint" => {
+                                        level_model.brith_point = [
+                                            grid_x as i32 + grid_offset[0],
+                                            grid_y as i32 + grid_offset[1],
+                                        ];
+                                    }
+                                    _ => {}
                                 }
-                                let color = color.unwrap();
-                                let alpha = alpha.unwrap();
-                                let inner = inner.unwrap();
-                                room.lights.push(Light {
-                                    // TODO 这里的问题是如何让灯光低于roof但是能够让光扩散的足够开
-                                    pos: [grid_x, grid_y, if inner { 32 } else { 0 }],
-                                    color: [color[0], color[1], color[2], alpha],
-                                })
                             }
                         }
                         _ => {
@@ -159,9 +173,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             rooms
         };
-        LevelModel { rooms, tilesets }
+        level_model.rooms = rooms;
+        level_model.tilesets = tilesets;
+        level_model
     };
     let buffer = std::fs::File::create("assets/levels/demo_output.json")?;
-    serde_json::to_writer(buffer, &level)?;
+    serde_json::to_writer(buffer, &level_model)?;
     Ok(())
 }
