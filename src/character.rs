@@ -23,6 +23,21 @@ pub enum CharacterDirection {
     UpRight,
 }
 
+impl CharacterDirection {
+    pub fn to_up(&mut self) {
+        *self = Self::Up
+    }
+    pub fn to_down(&mut self) {
+        *self = Self::Down
+    }
+    pub fn to_left(&mut self) {
+        *self = Self::DownLeft
+    }
+    pub fn to_right(&mut self) {
+        *self = Self::DownRight
+    }
+}
+
 const TAG_IDLE_DOWN: &'static str = "Idle_Down";
 const TAG_IDLE_DOWN_RIGHT: &'static str = "Idle_DownRight";
 const TAG_IDLE_UP: &'static str = "Idle_Up";
@@ -47,6 +62,7 @@ const CHARACTER_FRAMES: [(&str, &[u8]); 8] = [
 pub struct Character {
     direction: CharacterDirection,
     action: CharacterAction,
+    move_speed: f32,
 }
 
 pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
@@ -74,6 +90,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     .insert(Character {
         direction: CharacterDirection::Down,
         action: CharacterAction::Idle,
+        move_speed: 80.0,
     })
     .insert(NotShadowCaster::default())
     .insert(Name::new("Character"));
@@ -136,67 +153,167 @@ pub fn update_character_sprite(
     }
 }
 
+#[derive(Default, Debug, Copy, Clone)]
+pub struct MoveDirection {
+    x: MoveDirectionX,
+    y: MoveDirectionY,
+}
+
+#[derive(Default, Debug, Copy, Clone)]
+enum MoveDirectionX {
+    Left,
+    Right,
+    #[default]
+    None,
+}
+
+#[derive(Default, Debug, Copy, Clone)]
+enum MoveDirectionY {
+    Up,
+    Down,
+    #[default]
+    None,
+}
+
+impl MoveDirection {
+    pub fn detect_key(&mut self, keyboard: &Input<KeyCode>) {
+        if keyboard.pressed(KeyCode::W) {
+            self.up()
+        }
+        if keyboard.pressed(KeyCode::S) {
+            self.down()
+        }
+        if keyboard.pressed(KeyCode::A) {
+            self.left()
+        }
+        if keyboard.pressed(KeyCode::D) {
+            self.right()
+        }
+    }
+    fn up(&mut self) {
+        match self.y {
+            MoveDirectionY::None => {
+                self.y = MoveDirectionY::Up;
+            }
+            MoveDirectionY::Down => {
+                self.y = MoveDirectionY::None;
+            }
+            _ => {}
+        }
+    }
+    fn down(&mut self) {
+        match self.y {
+            MoveDirectionY::None => {
+                self.y = MoveDirectionY::Down;
+            }
+            MoveDirectionY::Up => {
+                self.y = MoveDirectionY::None;
+            }
+            _ => {}
+        }
+    }
+    fn left(&mut self) {
+        match self.x {
+            MoveDirectionX::None => {
+                self.x = MoveDirectionX::Left;
+            }
+            MoveDirectionX::Right => {
+                self.x = MoveDirectionX::None;
+            }
+            _ => {}
+        }
+    }
+    fn right(&mut self) {
+        match self.x {
+            MoveDirectionX::None => {
+                self.x = MoveDirectionX::Right;
+            }
+            MoveDirectionX::Left => {
+                self.x = MoveDirectionX::None;
+            }
+            _ => {}
+        }
+    }
+}
+
 pub fn character_move(
     mut query: Query<(&mut Transform, &mut Character)>,
     keyboard: Res<Input<KeyCode>>,
     time: Res<Time>,
+    cache: Res<ResourceCache>,
 ) {
-    let speed = time.delta_seconds() * 8.0;
-    const RATIO: f32 = SQRT_2 / 2.0;
-
     for (mut t, mut char) in query.iter_mut() {
-        let mut direction: Option<CharacterDirection> = None;
-        let mut walking = false;
-        let mut move_translation = Vec2::default();
-
-        if keyboard.pressed(KeyCode::W) {
-            if keyboard.pressed(KeyCode::A) {
-                move_translation.y += speed * RATIO;
-                move_translation.x -= speed * RATIO;
-                direction = Some(CharacterDirection::UpLeft);
-            } else if keyboard.pressed(KeyCode::D) {
-                move_translation.y += speed * RATIO;
-                move_translation.x += speed * RATIO;
-                direction = Some(CharacterDirection::UpRight);
-            } else {
-                move_translation.y += speed;
-                direction = Some(CharacterDirection::Up);
+        let mut move_direction = MoveDirection::default();
+        move_direction.detect_key(&keyboard);
+        let old_pos = [
+            t.translation.x / SCALE_RATIO,
+            -(t.translation.z / SCALE_RATIO) / SQRT_2,
+        ];
+        let speed = time.delta_seconds() * char.move_speed;
+        let to_grid_pos = |pos: [f32; 2]| -> [i32; 2] {
+            // TODO 目前不知道为什么整体偏移了(8,-24)
+            let pos = [pos[0] + 8.0, pos[1] + 24.0];
+            [
+                (pos[0] / GRID_SIZE).floor() as i32,
+                (pos[1] / GRID_SIZE).floor() as i32,
+            ]
+        };
+        let mut walking = true;
+        match (move_direction.x, move_direction.y) {
+            (MoveDirectionX::None, MoveDirectionY::Up) => {
+                char.direction.to_up();
+                let new_pos = [old_pos[0], old_pos[1] + speed];
+                let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+                let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+                if cache.levels[0].contains_floor(need_detect_left_pos)
+                    && cache.levels[0].contains_floor(need_detect_right_pos)
+                {
+                    t.translation.x = new_pos[0] * SCALE_RATIO;
+                    t.translation.z = -new_pos[1] * SQRT_2 * SCALE_RATIO;
+                }
             }
-            walking = true;
-        } else if keyboard.pressed(KeyCode::S) {
-            if keyboard.pressed(KeyCode::A) {
-                move_translation.y -= speed * RATIO;
-                move_translation.x -= speed * RATIO;
-                direction = Some(CharacterDirection::DownLeft);
-            } else if keyboard.pressed(KeyCode::D) {
-                move_translation.y -= speed * RATIO;
-                move_translation.x += speed * RATIO;
-                direction = Some(CharacterDirection::DownRight);
-            } else {
-                move_translation.y -= speed;
-                direction = Some(CharacterDirection::Down);
+            (MoveDirectionX::None, MoveDirectionY::Down) => {
+                char.direction.to_down();
+                let new_pos = [old_pos[0], old_pos[1] - speed];
+                let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+                let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+                if cache.levels[0].contains_floor(need_detect_left_pos)
+                    && cache.levels[0].contains_floor(need_detect_right_pos)
+                {
+                    t.translation.x = new_pos[0] * SCALE_RATIO;
+                    t.translation.z = -new_pos[1] * SQRT_2 * SCALE_RATIO;
+                }
             }
-            walking = true;
-        } else if keyboard.pressed(KeyCode::A) {
-            move_translation.x -= speed;
-            direction = Some(CharacterDirection::DownLeft);
-            walking = true;
-        } else if keyboard.pressed(KeyCode::D) {
-            move_translation.x += speed;
-            direction = Some(CharacterDirection::DownRight);
-            walking = true;
+            (MoveDirectionX::Left, MoveDirectionY::None) => {
+                char.direction.to_left();
+                let new_pos = [old_pos[0] - speed, old_pos[1]];
+                let need_detect_top_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+                let need_detect_bottom_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+                if cache.levels[0].contains_floor(need_detect_top_pos)
+                    && cache.levels[0].contains_floor(need_detect_bottom_pos)
+                {
+                    t.translation.x = new_pos[0] * SCALE_RATIO;
+                    t.translation.z = -new_pos[1] * SQRT_2 * SCALE_RATIO;
+                }
+            }
+            (MoveDirectionX::Right, MoveDirectionY::None) => {
+                char.direction.to_right();
+                let new_pos = [old_pos[0] + speed, old_pos[1]];
+                let need_detect_top_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+                let need_detect_bottom_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+                if cache.levels[0].contains_floor(need_detect_top_pos)
+                    && cache.levels[0].contains_floor(need_detect_bottom_pos)
+                {
+                    t.translation.x = new_pos[0] * SCALE_RATIO;
+                    t.translation.z = -new_pos[1] * SQRT_2 * SCALE_RATIO;
+                }
+            }
+            _ => {
+                walking = false;
+            }
         }
 
-        if walking {
-            t.translation.x += move_translation.x;
-            let actual_move_z = -move_translation.y * SQRT_2;
-            t.translation.z += actual_move_z;
-        }
-
-        if let Some(direction) = direction {
-            char.direction = direction;
-        }
-
+        // TODO 处理移动的方向和处理角色的朝向应该是分离的
         if walking {
             char.action = CharacterAction::Walking;
         } else {
