@@ -33,14 +33,20 @@ impl ResourceCache {
     pub fn get_tile_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
         self.tile_meshes.get(&key).unwrap()
     }
+    pub fn get_tile_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
+        self.tile_materials.get(tag).unwrap().get(&index).unwrap()
+    }
     pub fn get_character_mesh(&self) -> &Handle<Mesh> {
         self.old_meshes.get("Tile28").unwrap()
     }
     pub fn get_character_mesh_flip(&self) -> &Handle<Mesh> {
         self.old_meshes.get("Tile28Flip").unwrap()
     }
-    pub fn get_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
-        self.tile_materials.get(tag).unwrap().get(&index).unwrap()
+    pub fn get_gun_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
+        self.gun_meshes.get(&key).unwrap()
+    }
+    pub fn get_gun_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
+        self.gun_materials.get(tag).unwrap().get(&index).unwrap()
     }
 }
 
@@ -136,6 +142,7 @@ pub fn initial_texture_atlases(
         rows: usize,
         images: &mut ResMut<Assets<Image>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
+        depth_bias: f32,
     ) -> (
         HashMap<u8, Handle<Image>>,
         HashMap<u8, Handle<StandardMaterial>>,
@@ -178,7 +185,7 @@ pub fn initial_texture_atlases(
                     base_color_texture: Some(sub_image_handle.clone()),
                     alpha_mode: AlphaMode::Blend,
                     unlit: true,
-                    depth_bias: 10.0,
+                    depth_bias,
                     ..default()
                 });
                 material_set.insert((y * columns + x) as u8, material_handle);
@@ -195,6 +202,7 @@ pub fn initial_texture_atlases(
         9,
         &mut images,
         &mut materials,
+        10.0,
     );
     cache.tile_images.insert(String::from("Covict"), atlas);
     cache
@@ -210,7 +218,33 @@ pub fn initial_texture_atlases(
         base_color_texture: Some(cache.char_hand_image.clone()),
         alpha_mode: AlphaMode::Blend,
         unlit: true,
-        depth_bias: 11.0,
+        depth_bias: 30.0,
         ..default()
     });
+
+    // 加载gun相关贴图资源
+    {
+        let (atlas, material_set) = initial_texture(
+            "assets/art/gun/Budget Revolver.png",
+            Vec2::new(16.0, 16.0),
+            4,
+            2,
+            &mut images,
+            &mut materials,
+            20.0,
+        );
+        cache
+            .gun_images
+            .insert(String::from("Budget Revolver"), atlas);
+        cache
+            .gun_materials
+            .insert(String::from("Budget Revolver"), material_set);
+        cache.gun_meshes.insert(
+            (16, 16),
+            meshes.add(Mesh::from(shape::Quad {
+                size: Vec2::new(16.0 * SCALE_RATIO, 16.0 * SCALE_RATIO * SQRT_2),
+                flip: false,
+            })),
+        );
+    }
 }

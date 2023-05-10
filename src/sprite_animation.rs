@@ -33,7 +33,7 @@ pub fn update_sprite(
     for (mut material_handle, mut mesh_handle, mut sprite) in query.iter_mut() {
         if sprite.changed {
             *material_handle = cache
-                .get_material(sprite.tag.as_str(), sprite.index)
+                .get_tile_material(sprite.tag.as_str(), sprite.index)
                 .clone();
             if sprite.flip_x {
                 *mesh_handle = cache.get_character_mesh_flip().clone();

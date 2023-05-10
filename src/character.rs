@@ -69,7 +69,7 @@ pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
     let pos = cache.levels[0].brith_point;
     c.spawn(PbrBundle {
         mesh: cache.get_character_mesh().clone(),
-        material: cache.get_material("Covict", 0).clone(),
+        material: cache.get_tile_material("Covict", 0).clone(),
         transform: Transform::from_xyz(
             pos[0] as f32 * SCALE_RATIO * GRID_SIZE,
             (28 / 2) as f32 * SQRT_2 * SCALE_RATIO,
