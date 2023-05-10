@@ -7,6 +7,17 @@ pub struct LevelModel {
     pub tilesets: Vec<Tileset>,
 }
 
+impl LevelModel {
+    pub fn contains_floor(&self, grid_pos: [i32; 2]) -> bool {
+        for room in self.rooms.iter() {
+            if room.contains_floor(grid_pos) {
+                return true;
+            }
+        }
+        false
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default, Debug)]
 pub struct RoomModel {
     /// 这里的坐标是根据room的左下角位置计算的
@@ -19,10 +30,41 @@ pub struct RoomModel {
     pub lights: Vec<Light>,
 }
 
+impl RoomModel {
+    pub fn contains_floor(&self, grid_pos: [i32; 2]) -> bool {
+        let rel_grid_x = grid_pos[0] - self.world_pos[0];
+        let rel_grid_y = grid_pos[1] - self.world_pos[1];
+        if rel_grid_x < 0 || rel_grid_y < 0 {
+            return false;
+        }
+        let rel_grid_pos = [rel_grid_x as u32, rel_grid_y as u32];
+        if rel_grid_pos[0] > self.size[0] || rel_grid_pos[1] > self.size[1] {
+            return false;
+        }
+        for tile_group in self.floors.iter() {
+            if tile_group.contains(rel_grid_pos) {
+                return true;
+            }
+        }
+        false
+    }
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default, Debug)]
 pub struct TileGroup {
     pub tileset_uuid: String,
     pub tiles: HashMap<u32, HashMap<u32, u8>>,
+}
+
+impl TileGroup {
+    pub fn contains(&self, grid_pos: [u32; 2]) -> bool {
+        if let Some(col) = self.tiles.get(&grid_pos[0]) {
+            if col.get(&grid_pos[1]).is_some() {
+                return true;
+            }
+        }
+        false
+    }
 }
 
 impl TileGroup {
