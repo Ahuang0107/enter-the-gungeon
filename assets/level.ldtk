@@ -498,8 +498,8 @@
 			"identifier": "Level_2",
 			"iid": "c4fe44f0-9f30-11ed-9d27-f36e7619d006",
 			"uid": 0,
-			"worldX": 32,
-			"worldY": 368,
+			"worldX": -576,
+			"worldY": 112,
 			"worldDepth": 0,
 			"pxWid": 672,
 			"pxHei": 432,
@@ -1020,29 +1020,6 @@
 									]
 								}
 							]
-						},
-						{
-							"__identifier": "BrithPoint",
-							"__grid": [
-								20,
-								14
-							],
-							"__pivot": [
-								0.5,
-								0.5
-							],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#BE4A2F",
-							"iid": "42c4f2f0-ed50-11ed-8d36-9dc15d685b25",
-							"width": 16,
-							"height": 16,
-							"defUid": 45,
-							"px": [
-								328,
-								232
-							],
-							"fieldInstances": []
 						}
 					]
 				},
@@ -15949,8 +15926,8 @@
 			"identifier": "Level_1",
 			"iid": "ad7c8980-c640-11ed-a6cb-0d7a5dc868c0",
 			"uid": 19,
-			"worldX": 336,
-			"worldY": 0,
+			"worldX": -272,
+			"worldY": -256,
 			"worldDepth": 0,
 			"pxWid": 560,
 			"pxHei": 368,
@@ -16237,6 +16214,29 @@
 									"realEditorValues": []
 								}
 							]
+						},
+						{
+							"__identifier": "BrithPoint",
+							"__grid": [
+								17,
+								15
+							],
+							"__pivot": [
+								0.5,
+								0.5
+							],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "6d5ab310-ed50-11ed-b547-3ded00a616d8",
+							"width": 16,
+							"height": 16,
+							"defUid": 45,
+							"px": [
+								280,
+								248
+							],
+							"fieldInstances": []
 						}
 					]
 				},
@@ -26737,8 +26737,8 @@
 			"identifier": "Level_0",
 			"iid": "5961b630-c640-11ed-a6e3-0f3395b33178",
 			"uid": 32,
-			"worldX": 0,
-			"worldY": 96,
+			"worldX": -608,
+			"worldY": -160,
 			"worldDepth": 0,
 			"pxWid": 336,
 			"pxHei": 256,
@@ -31470,8 +31470,8 @@
 			"identifier": "Level_7",
 			"iid": "64c21d60-ed50-11ed-9db5-8b6e8a3d7f9c",
 			"uid": 41,
-			"worldX": 2000,
-			"worldY": 192,
+			"worldX": 1392,
+			"worldY": -64,
 			"worldDepth": 0,
 			"pxWid": 288,
 			"pxHei": 256,
@@ -35978,8 +35978,8 @@
 			"identifier": "Level_4",
 			"iid": "0cf16800-ed50-11ed-9da9-691971e8288d",
 			"uid": 36,
-			"worldX": 992,
-			"worldY": 96,
+			"worldX": 384,
+			"worldY": -160,
 			"worldDepth": 0,
 			"pxWid": 544,
 			"pxHei": 304,
@@ -44765,8 +44765,8 @@
 			"identifier": "Level_5",
 			"iid": "e5a40ee0-ed50-11ed-9db5-bbe150c09077",
 			"uid": 38,
-			"worldX": 400,
-			"worldY": -448,
+			"worldX": -208,
+			"worldY": -704,
 			"worldDepth": 0,
 			"pxWid": 464,
 			"pxHei": 448,
@@ -57353,8 +57353,8 @@
 			"identifier": "Level_6",
 			"iid": "d09f67b0-ed50-11ed-9db5-370da83740cb",
 			"uid": 39,
-			"worldX": 896,
-			"worldY": 176,
+			"worldX": 288,
+			"worldY": -80,
 			"worldDepth": 0,
 			"pxWid": 96,
 			"pxHei": 80,
@@ -57939,8 +57939,8 @@
 			"identifier": "Level_8",
 			"iid": "8dad6280-ed50-11ed-9db5-077524557626",
 			"uid": 40,
-			"worldX": 1536,
-			"worldY": 224,
+			"worldX": 928,
+			"worldY": -32,
 			"worldDepth": 0,
 			"pxWid": 464,
 			"pxHei": 160,
@@ -62251,8 +62251,8 @@
 			"identifier": "Level_9",
 			"iid": "0ac448a0-ed50-11ed-9db5-757cedb5a221",
 			"uid": 42,
-			"worldX": -96,
-			"worldY": 800,
+			"worldX": -704,
+			"worldY": 544,
 			"worldDepth": 0,
 			"pxWid": 240,
 			"pxHei": 144,
@@ -63752,8 +63752,8 @@
 			"identifier": "Level_10",
 			"iid": "a5603590-ed50-11ed-9db5-9304b06b25ff",
 			"uid": 43,
-			"worldX": -480,
-			"worldY": 704,
+			"worldX": -1088,
+			"worldY": 448,
 			"worldDepth": 0,
 			"pxWid": 384,
 			"pxHei": 400,
@@ -72450,8 +72450,8 @@
 			"identifier": "Level_11",
 			"iid": "ccaf79c0-ed50-11ed-9db5-5fe3a86387e4",
 			"uid": 44,
-			"worldX": 704,
-			"worldY": 496,
+			"worldX": 96,
+			"worldY": 240,
 			"worldDepth": 0,
 			"pxWid": 368,
 			"pxHei": 368,
