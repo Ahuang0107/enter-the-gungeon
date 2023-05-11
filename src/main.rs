@@ -84,14 +84,17 @@ fn main() {
 
     app.add_system((res::reset_res).in_schedule(OnEnter(AppState::Loading)));
 
-    app.add_system((tilemap::setup).in_schedule(OnEnter(AppState::InGame)));
-    app.add_system((character::setup).in_schedule(OnEnter(AppState::InGame)));
+    app.add_systems(
+        (tilemap::setup, ui::cursor::setup, character::setup)
+            .in_schedule(OnEnter(AppState::InGame)),
+    );
     app.add_systems(
         (
             character::update_character_sprite,
             character::play_character_sound,
             character::character_move,
             res::update_actor,
+            ui::cursor::update,
         )
             .in_set(OnUpdate(AppState::InGame)),
     );
