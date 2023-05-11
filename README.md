@@ -2,7 +2,37 @@
 
 a re-implement of enter the gungeon with bevy engine
 
-## Detail
+## Build
 
-- 角色移动时，只要是水平的向左向右移动，人物都是面朝下的
-- 如何做到idle时sprite动画的速度和walking时是不同的？
+- rustc 1.69.0
+- rustc 1.71.0-nightly
+
+## Run
+
+first you need to generate the demo level file with this command:
+
+```shell
+cargo run --package world_generator --bin world_generator
+```
+
+then you can run the game with this command:
+
+```shell
+cargo run --package enter-the-gungeon --bin enter-the-gungeon --release RUST_BACKTRACE=1
+```
+
+## Test
+
+it will run all the test
+
+```shell
+cargo test --all
+```
+
+## Bench
+
+it will run all the benchmark, notice it should run with nightly channel
+
+```shell
+cargo +nightly bench --all
+```
