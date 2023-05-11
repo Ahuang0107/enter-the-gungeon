@@ -4,12 +4,11 @@ use bevy::window::PresentMode;
 use bevy_kira_audio::prelude::*;
 
 use bevy_task_queue::TaskQueue;
-
-use crate::resource::ResourceCache;
+use res::{Cache, ResActor};
 
 mod character;
 mod debug;
-mod resource;
+mod res;
 mod sprite_animation;
 mod tilemap;
 mod title;
@@ -69,7 +68,8 @@ fn main() {
     .add_plugin(debug::DebugPlugin);
     app.insert_resource(ClearColor(Color::rgba_u8(3, 12, 14, 255)));
     app.add_state::<AppState>();
-    app.insert_resource(ResourceCache::default());
+    app.insert_resource(Cache::default());
+    app.insert_resource(ResActor::convict().with_budget_revolver());
     app.insert_resource(TaskQueue::new());
     app.add_startup_system(setup_camera);
     app.add_system(auto_next_state);
@@ -80,7 +80,7 @@ fn main() {
     app.add_system((title::detect_start).in_set(OnUpdate(AppState::Title)));
     app.add_system((title::dismount).in_schedule(OnExit(AppState::Title)));
 
-    app.add_system((resource::initial_texture_atlases).in_schedule(OnEnter(AppState::Loading)));
+    app.add_system((res::reset_res).in_schedule(OnEnter(AppState::Loading)));
 
     app.add_system((tilemap::setup).in_schedule(OnEnter(AppState::InGame)));
     app.add_system((character::setup).in_schedule(OnEnter(AppState::InGame)));
@@ -89,7 +89,7 @@ fn main() {
             character::update_character_sprite,
             character::play_character_sound,
             character::character_move,
-            character::camera_follow_character,
+            res::update_actor,
         )
             .in_set(OnUpdate(AppState::InGame)),
     );

@@ -2,7 +2,7 @@ use std::f32::consts::{PI, SQRT_2};
 
 use bevy::prelude::*;
 
-use crate::resource::{GRID_SIZE, SCALE_RATIO};
+use crate::res::{GRID_SIZE, SCALE_RATIO};
 
 /// wall tile
 pub fn tile_wall_sprite(

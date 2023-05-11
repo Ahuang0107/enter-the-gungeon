@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::resource::ResourceCache;
+use crate::res::Cache;
 
 #[derive(Clone, Debug, Default, Component, Reflect)]
 pub struct MaterialSprite {
@@ -23,7 +23,7 @@ impl MaterialSprite {
 }
 
 pub fn update_sprite(
-    cache: Res<ResourceCache>,
+    cache: Res<Cache>,
     mut query: Query<(
         &mut Handle<StandardMaterial>,
         &mut Handle<Mesh>,

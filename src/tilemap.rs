@@ -3,10 +3,10 @@ use std::f32::consts::SQRT_2;
 
 use bevy::prelude::*;
 
-use crate::resource::{ResourceCache, GRID_SIZE, SCALE_RATIO};
+use crate::res::{Cache, GRID_SIZE, SCALE_RATIO};
 use crate::utils;
 
-pub fn setup(mut c: Commands, cache: Res<ResourceCache>) {
+pub fn setup(mut c: Commands, cache: Res<Cache>) {
     let level = &cache.levels[0];
     let mut tilesets = HashMap::new();
     for tileset in cache.levels[0].tilesets.iter() {

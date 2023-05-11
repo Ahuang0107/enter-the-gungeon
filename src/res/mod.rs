@@ -4,54 +4,21 @@ use std::f32::consts::SQRT_2;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
+pub use actor::{ActorAction, ActorDirection, ResActor, ResGun};
+pub use cache::Cache;
 use world_generator::LevelModel;
+
+use crate::character::CopActor;
+
+mod actor;
+mod cache;
 
 pub const SCALE_RATIO: f32 = 0.1;
 pub const GRID_SIZE: f32 = 16.0;
 
-#[derive(Resource, Default)]
-pub struct ResourceCache {
-    pub levels: Vec<LevelModel>,
-    // 下面4个都是tilemap会用到的material和mesh
-    pub tile_images: HashMap<String, HashMap<u8, Handle<Image>>>,
-    pub tile_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
-    // 主要是tilemap使用mesh
-    pub tile_meshes: HashMap<(u32, u32), Handle<Mesh>>,
-    // char的hand相关的material和mesh
-    pub char_hand_image: Handle<Image>,
-    pub char_hand_material: Handle<StandardMaterial>,
-    pub char_hand_mesh: Handle<Mesh>,
-    // gun相关的material和mesh
-    pub gun_images: HashMap<String, HashMap<u8, Handle<Image>>>,
-    pub gun_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
-    pub gun_meshes: HashMap<(u32, u32), Handle<Mesh>>,
-    // TODO need to des
-    pub old_meshes: HashMap<String, Handle<Mesh>>,
-}
-
-impl ResourceCache {
-    pub fn get_tile_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
-        self.tile_meshes.get(&key).unwrap()
-    }
-    pub fn get_tile_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
-        self.tile_materials.get(tag).unwrap().get(&index).unwrap()
-    }
-    pub fn get_character_mesh(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile28").unwrap()
-    }
-    pub fn get_character_mesh_flip(&self) -> &Handle<Mesh> {
-        self.old_meshes.get("Tile28Flip").unwrap()
-    }
-    pub fn get_gun_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
-        self.gun_meshes.get(&key).unwrap()
-    }
-    pub fn get_gun_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
-        self.gun_materials.get(tag).unwrap().get(&index).unwrap()
-    }
-}
-
-pub fn initial_texture_atlases(
-    mut cache: ResMut<ResourceCache>,
+pub fn reset_res(
+    mut cache: ResMut<Cache>,
+    mut actor: ResMut<ResActor>,
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -59,6 +26,10 @@ pub fn initial_texture_atlases(
 ) {
     let level = LevelModel::from("assets/levels/demo_output.json").unwrap();
     cache.levels.push(level.clone());
+    actor.update_pos({
+        let pos = level.brith_point;
+        [pos[0] as f32 * GRID_SIZE, pos[1] as f32 * GRID_SIZE]
+    });
 
     // 收集所有的尺寸用来创建mesh
     let mut tile_meshes_set = HashSet::new();
@@ -246,5 +217,21 @@ pub fn initial_texture_atlases(
                 flip: false,
             })),
         );
+    }
+}
+
+pub fn update_actor(
+    actor: Res<ResActor>,
+    mut actor_query: Query<&mut Transform, (With<CopActor>, Without<Camera>)>,
+    mut camera_query: Query<&mut Transform, (With<Camera>, Without<CopActor>)>,
+) {
+    for mut t in actor_query.iter_mut() {
+        t.translation = actor.get_actual_pos();
+    }
+    for mut t in camera_query.iter_mut() {
+        let mut actual_pos = actor.get_actual_pos();
+        actual_pos.y += 200.0;
+        actual_pos.z += 200.0;
+        t.translation = actual_pos;
     }
 }
