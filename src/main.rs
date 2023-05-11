@@ -11,7 +11,7 @@ mod debug;
 mod res;
 mod sprite_animation;
 mod tilemap;
-mod title;
+mod ui;
 mod utils;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -76,9 +76,9 @@ fn main() {
     app.add_system(sprite_animation::update_sprite);
     app.add_system(sprite_animation::sprite_animation);
 
-    app.add_system((title::setup).in_schedule(OnEnter(AppState::Title)));
-    app.add_system((title::detect_start).in_set(OnUpdate(AppState::Title)));
-    app.add_system((title::dismount).in_schedule(OnExit(AppState::Title)));
+    app.add_system((ui::title::setup).in_schedule(OnEnter(AppState::Title)));
+    app.add_system((ui::title::detect_start).in_set(OnUpdate(AppState::Title)));
+    app.add_system((ui::title::dismount).in_schedule(OnExit(AppState::Title)));
 
     app.add_system((res::reset_res).in_schedule(OnEnter(AppState::Loading)));
 
