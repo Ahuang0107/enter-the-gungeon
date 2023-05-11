@@ -235,7 +235,7 @@ pub fn character_move(
 
     let mut move_direction = MoveDirection::default();
     move_direction.detect_key(&keyboard);
-    let old_pos = [
+    let mut old_pos = [
         actor.get_actual_pos().x / SCALE_RATIO,
         -(actor.get_actual_pos().z / SCALE_RATIO) / SQRT_2,
     ];
@@ -249,6 +249,7 @@ pub fn character_move(
         ]
     };
     let mut walking = true;
+    // TODO 这里暂时没有抽象好，回头有空可以再回来改
     match (move_direction.x, move_direction.y) {
         (MoveDirectionX::None, MoveDirectionY::Up) => {
             let new_pos = [old_pos[0], old_pos[1] + speed];
@@ -282,6 +283,86 @@ pub fn character_move(
         }
         (MoveDirectionX::Right, MoveDirectionY::None) => {
             let new_pos = [old_pos[0] + speed, old_pos[1]];
+            let need_detect_top_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            let need_detect_bottom_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_top_pos)
+                && cache.levels[0].contains_floor(need_detect_bottom_pos)
+            {
+                actor.update_pos(new_pos);
+            }
+        }
+        (MoveDirectionX::Left, MoveDirectionY::Up) => {
+            let ratio = SQRT_2 / 2.0;
+            let new_pos = [old_pos[0], old_pos[1] + speed * ratio];
+            let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_left_pos)
+                && cache.levels[0].contains_floor(need_detect_right_pos)
+            {
+                actor.update_pos(new_pos);
+                old_pos = new_pos;
+            }
+            let new_pos = [old_pos[0] - speed * ratio, old_pos[1]];
+            let need_detect_top_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            let need_detect_bottom_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_top_pos)
+                && cache.levels[0].contains_floor(need_detect_bottom_pos)
+            {
+                actor.update_pos(new_pos);
+            }
+        }
+        (MoveDirectionX::Left, MoveDirectionY::Down) => {
+            let ratio = SQRT_2 / 2.0;
+            let new_pos = [old_pos[0], old_pos[1] - speed * ratio];
+            let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_left_pos)
+                && cache.levels[0].contains_floor(need_detect_right_pos)
+            {
+                actor.update_pos(new_pos);
+                old_pos = new_pos;
+            }
+            let new_pos = [old_pos[0] - speed * ratio, old_pos[1]];
+            let need_detect_top_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            let need_detect_bottom_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_top_pos)
+                && cache.levels[0].contains_floor(need_detect_bottom_pos)
+            {
+                actor.update_pos(new_pos);
+            }
+        }
+        (MoveDirectionX::Right, MoveDirectionY::Up) => {
+            let ratio = SQRT_2 / 2.0;
+            let new_pos = [old_pos[0], old_pos[1] + speed * ratio];
+            let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_left_pos)
+                && cache.levels[0].contains_floor(need_detect_right_pos)
+            {
+                actor.update_pos(new_pos);
+                old_pos = new_pos;
+            }
+            let new_pos = [old_pos[0] + speed * ratio, old_pos[1]];
+            let need_detect_top_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            let need_detect_bottom_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_top_pos)
+                && cache.levels[0].contains_floor(need_detect_bottom_pos)
+            {
+                actor.update_pos(new_pos);
+            }
+        }
+        (MoveDirectionX::Right, MoveDirectionY::Down) => {
+            let ratio = SQRT_2 / 2.0;
+            let new_pos = [old_pos[0], old_pos[1] - speed * ratio];
+            let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
+            let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
+            if cache.levels[0].contains_floor(need_detect_left_pos)
+                && cache.levels[0].contains_floor(need_detect_right_pos)
+            {
+                actor.update_pos(new_pos);
+                old_pos = new_pos;
+            }
+            let new_pos = [old_pos[0] + speed * ratio, old_pos[1]];
             let need_detect_top_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
             let need_detect_bottom_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
             if cache.levels[0].contains_floor(need_detect_top_pos)
