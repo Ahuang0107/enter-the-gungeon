@@ -4,12 +4,15 @@ use bevy::prelude::*;
 
 use crate::res::SCALE_RATIO;
 
-#[derive(Resource, Default)]
+#[derive(Resource, Reflect, Default)]
 pub struct ResActor {
     pos: [f32; 2],
     direction: ActorDirection,
     action: ActorAction,
     move_speed: f32,
+    // only for debug inspect
+    cursor_angle: f32,
+    #[reflect(ignore)]
     gun: Option<ResGun>,
 }
 
@@ -34,12 +37,19 @@ impl ResActor {
     pub fn update_pos(&mut self, pos: [f32; 2]) {
         self.pos = pos;
     }
+    pub fn get_tilemap_pos(&self) -> [f32; 2] {
+        self.pos
+    }
     pub fn get_actual_pos(&self) -> Vec3 {
         Vec3::new(
             self.pos[0] as f32 * SCALE_RATIO,
             (28 / 2) as f32 * SQRT_2 * SCALE_RATIO,
             -self.pos[1] as f32 * SCALE_RATIO * SQRT_2,
         )
+    }
+    // only for debug inspect
+    pub fn update_angle(&mut self, angle: f32) {
+        self.cursor_angle = angle
     }
     pub fn get_move_speed(&self) -> f32 {
         self.move_speed
@@ -87,14 +97,14 @@ impl ResActor {
     }
 }
 
-#[derive(PartialEq, Default, Copy, Clone)]
+#[derive(PartialEq, Reflect, Default, Copy, Clone)]
 pub enum ActorAction {
     #[default]
     Idle,
     Walking,
 }
 
-#[derive(PartialEq, Default, Copy, Clone)]
+#[derive(PartialEq, Reflect, Default, Copy, Clone)]
 pub enum ActorDirection {
     #[default]
     Down,

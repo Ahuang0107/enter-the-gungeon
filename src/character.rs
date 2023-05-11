@@ -1,10 +1,11 @@
-use std::f32::consts::SQRT_2;
+use std::f32::consts::{PI, SQRT_2};
 
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
+use crate::cursor::ResCursor;
 use crate::res::{ActorAction, ActorDirection, Cache, ResActor, GRID_SIZE, SCALE_RATIO};
 use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 
@@ -147,6 +148,7 @@ pub fn character_move(
     time: Res<Time>,
     mut actor: ResMut<ResActor>,
     cache: Res<Cache>,
+    cursor: Res<ResCursor>,
 ) {
     #[derive(Default, Debug, Copy, Clone)]
     pub struct MoveDirection {
@@ -249,7 +251,6 @@ pub fn character_move(
     let mut walking = true;
     match (move_direction.x, move_direction.y) {
         (MoveDirectionX::None, MoveDirectionY::Up) => {
-            actor.turn_up();
             let new_pos = [old_pos[0], old_pos[1] + speed];
             let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
             let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
@@ -260,7 +261,6 @@ pub fn character_move(
             }
         }
         (MoveDirectionX::None, MoveDirectionY::Down) => {
-            actor.turn_down();
             let new_pos = [old_pos[0], old_pos[1] - speed];
             let need_detect_left_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
             let need_detect_right_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
@@ -271,7 +271,6 @@ pub fn character_move(
             }
         }
         (MoveDirectionX::Left, MoveDirectionY::None) => {
-            actor.turn_left();
             let new_pos = [old_pos[0] - speed, old_pos[1]];
             let need_detect_top_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
             let need_detect_bottom_pos = to_grid_pos([new_pos[0] - 7.0, new_pos[1]]);
@@ -282,7 +281,6 @@ pub fn character_move(
             }
         }
         (MoveDirectionX::Right, MoveDirectionY::None) => {
-            actor.turn_right();
             let new_pos = [old_pos[0] + speed, old_pos[1]];
             let need_detect_top_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
             let need_detect_bottom_pos = to_grid_pos([new_pos[0] + 7.0, new_pos[1]]);
@@ -297,11 +295,38 @@ pub fn character_move(
         }
     }
 
-    // TODO 处理移动的方向和处理角色的朝向应该是分离的
+    // 判断actor当前状态
     if walking {
         actor.active_walking()
     } else {
         actor.active_idle()
+    }
+
+    // 判断actor当前朝向
+    let cursor_pos = cursor.get_tilemap_pos();
+    let actor_pos = actor.get_tilemap_pos();
+    let radians = Vec2::X.angle_between(
+        Vec2::new(cursor_pos[0], cursor_pos[1]) - Vec2::new(actor_pos[0], actor_pos[1]),
+    );
+    let angle = (radians * 180.0 / PI).round();
+    // only for debug inspect
+    actor.update_angle(angle);
+    if angle >= -120.0 && angle <= -60.0 {
+        actor.turn_down();
+    } else if angle >= -60.0 && angle <= 30.0 {
+        actor.turn_down();
+        actor.turn_right();
+    } else if angle >= 30.0 && angle <= 60.0 {
+        actor.turn_up();
+        actor.turn_right();
+    } else if angle >= 60.0 && angle <= 120.0 {
+        actor.turn_up();
+    } else if angle >= 120.0 && angle <= 150.0 {
+        actor.turn_up();
+        actor.turn_left();
+    } else {
+        actor.turn_down();
+        actor.turn_left();
     }
 }
 

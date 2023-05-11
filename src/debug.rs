@@ -1,8 +1,10 @@
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_inspector_egui::quick::{ResourceInspectorPlugin, WorldInspectorPlugin};
 use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlugin};
 
+use crate::cursor::ResCursor;
+use crate::res::ResActor;
 use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
 
 pub struct DebugPlugin;
@@ -16,6 +18,14 @@ impl Plugin for DebugPlugin {
             .register_type::<SpriteAnimation>()
             // .add_system(move_camera)
             .add_system(scroll_camera);
+        {
+            app.add_plugin(ResourceInspectorPlugin::<ResActor>::default());
+            app.register_type::<ResActor>();
+        }
+        {
+            app.add_plugin(ResourceInspectorPlugin::<ResCursor>::default());
+            app.register_type::<ResCursor>();
+        }
     }
 }
 

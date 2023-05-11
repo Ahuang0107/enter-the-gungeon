@@ -7,6 +7,7 @@ use bevy_task_queue::TaskQueue;
 use res::{Cache, ResActor};
 
 mod character;
+mod cursor;
 mod debug;
 mod res;
 mod sprite_animation;
@@ -65,7 +66,8 @@ fn main() {
             }),
     )
     .add_plugin(AudioPlugin)
-    .add_plugin(debug::DebugPlugin);
+    .add_plugin(debug::DebugPlugin)
+    .add_plugin(cursor::CursorDetectPlugin);
     app.insert_resource(ClearColor(Color::rgba_u8(3, 12, 14, 255)));
     app.add_state::<AppState>();
     app.insert_resource(Cache::default());
