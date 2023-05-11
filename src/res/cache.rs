@@ -22,6 +22,7 @@ pub struct Cache {
     pub gun_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     // TODO need to des
     pub old_meshes: HashMap<String, Handle<Mesh>>,
+    pub ui_hp_images: HashMap<u8, Handle<Image>>,
 }
 
 impl Cache {
@@ -42,5 +43,8 @@ impl Cache {
     }
     pub fn get_gun_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.gun_materials.get(tag).unwrap().get(&index).unwrap()
+    }
+    pub fn get_hp_image(&self, index: u8) -> &Handle<Image> {
+        self.ui_hp_images.get(&index).unwrap()
     }
 }

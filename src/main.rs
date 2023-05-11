@@ -85,7 +85,12 @@ fn main() {
     app.add_system((res::reset_res).in_schedule(OnEnter(AppState::Loading)));
 
     app.add_systems(
-        (tilemap::setup, ui::cursor::setup, character::setup)
+        (
+            tilemap::setup,
+            ui::cursor::setup,
+            ui::hp::setup,
+            character::setup,
+        )
             .in_schedule(OnEnter(AppState::InGame)),
     );
     app.add_systems(
@@ -95,6 +100,7 @@ fn main() {
             character::character_move,
             res::update_actor,
             ui::cursor::update,
+            ui::hp::update,
         )
             .in_set(OnUpdate(AppState::InGame)),
     );

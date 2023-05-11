@@ -9,6 +9,7 @@ pub use cache::Cache;
 use world_generator::LevelModel;
 
 use crate::character::CopActor;
+use crate::utils;
 
 mod actor;
 mod cache;
@@ -217,6 +218,14 @@ pub fn reset_res(
                 flip: false,
             })),
         );
+    }
+
+    {
+        for (index, image) in
+            utils::split_images("assets/art/ui/heart.png", Vec2::new(16.0, 16.0), 2, 2)
+        {
+            cache.ui_hp_images.insert(index, images.add(image));
+        }
     }
 }
 

@@ -10,6 +10,8 @@ pub struct ResActor {
     direction: ActorDirection,
     action: ActorAction,
     move_speed: f32,
+    hp_full: u8,
+    hp: u8,
     // only for debug inspect
     cursor_angle: f32,
     #[reflect(ignore)]
@@ -19,8 +21,11 @@ pub struct ResActor {
 impl ResActor {
     /// 只是一个开发阶段直接使用制定配置的方法
     pub fn convict() -> Self {
+        let default_hp = 6;
         Self {
             move_speed: 100.0,
+            hp_full: default_hp,
+            hp: default_hp,
             ..Default::default()
         }
     }
@@ -46,6 +51,9 @@ impl ResActor {
             (28 / 2) as f32 * SQRT_2 * SCALE_RATIO,
             -self.pos[1] as f32 * SCALE_RATIO * SQRT_2,
         )
+    }
+    pub fn get_cur_hp(&self) -> u8 {
+        self.hp
     }
     // only for debug inspect
     pub fn update_angle(&mut self, angle: f32) {
