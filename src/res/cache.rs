@@ -21,6 +21,7 @@ pub struct Cache {
     pub gun_images: HashMap<String, HashMap<u8, Handle<Image>>>,
     pub gun_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
     pub gun_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    pub gun_meshes_flip: HashMap<(u32, u32), Handle<Mesh>>,
     // TODO need to des
     pub old_meshes: HashMap<String, Handle<Mesh>>,
     pub ui_hp_images: HashMap<u8, Handle<Image>>,
@@ -42,8 +43,12 @@ impl Cache {
     pub fn get_character_mesh_flip(&self) -> &Handle<Mesh> {
         self.old_meshes.get("Tile28Flip").unwrap()
     }
-    pub fn get_gun_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
-        self.gun_meshes.get(&key).unwrap()
+    pub fn get_gun_mesh(&self, key: (u32, u32), flip: bool) -> &Handle<Mesh> {
+        if flip {
+            self.gun_meshes_flip.get(&key).unwrap()
+        } else {
+            self.gun_meshes.get(&key).unwrap()
+        }
     }
     pub fn get_gun_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.gun_materials.get(tag).unwrap().get(&index).unwrap()

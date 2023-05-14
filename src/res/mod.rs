@@ -9,7 +9,7 @@ pub use cache::Cache;
 use world_generator::LevelModel;
 
 use crate::character::CopActor;
-use crate::utils;
+use crate::{utils, CAMERA_FAR};
 
 mod actor;
 mod cache;
@@ -226,6 +226,13 @@ pub fn reset_res(
                 flip: false,
             })),
         );
+        cache.gun_meshes_flip.insert(
+            (16, 16),
+            meshes.add(Mesh::from(shape::Quad {
+                size: Vec2::new(16.0 * SCALE_RATIO, 16.0 * SCALE_RATIO * SQRT_2),
+                flip: true,
+            })),
+        );
     }
 
     {
@@ -247,8 +254,7 @@ pub fn update_actor(
     }
     for mut t in camera_query.iter_mut() {
         let mut actual_pos = actor.get_actual_pos();
-        // actual_pos.y += .0;
-        actual_pos.z += 200.0;
+        actual_pos.z += CAMERA_FAR;
         t.translation = actual_pos;
     }
 }

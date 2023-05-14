@@ -33,7 +33,13 @@ const CHARACTER_FRAMES: [(&str, &[u8]); 8] = [
 pub struct CopActor;
 
 #[derive(Component)]
-pub struct CopGun;
+pub struct CopGun {
+    mesh: Handle<Mesh>,
+    mesh_flip: Handle<Mesh>,
+}
+
+#[derive(Component)]
+pub struct CopHand;
 
 pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
     c.spawn(PbrBundle {
@@ -52,7 +58,7 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
             let offset = actor_gun.offset;
             let hand_offset = actor_gun.hand_offset;
             p.spawn(PbrBundle {
-                mesh: cache.get_gun_mesh((size[0], size[1])).clone(),
+                mesh: cache.get_gun_mesh((size[0], size[1]), false).clone(),
                 material: cache.get_gun_material(&name, 0).clone(),
                 transform: Transform::from_xyz(
                     offset[0] * SCALE_RATIO,
@@ -61,7 +67,10 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
                 ),
                 ..default()
             })
-            .insert(CopGun)
+            .insert(CopGun {
+                mesh: cache.get_gun_mesh((size[0], size[1]), false).clone(),
+                mesh_flip: cache.get_gun_mesh((size[0], size[1]), true).clone(),
+            })
             .insert(Name::new(name))
             .with_children(|p| {
                 p.spawn(PbrBundle {
@@ -74,6 +83,7 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
                     ),
                     ..default()
                 })
+                .insert(CopHand)
                 .insert(Name::new("Hand"));
             });
         }
@@ -83,6 +93,52 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
     .insert(CopActor)
     .insert(NotShadowCaster::default())
     .insert(Name::new("Character"));
+}
+
+pub fn update_gun_direction(
+    actor: Res<ResActor>,
+    mut gun_query: Query<(&mut Transform, &mut Handle<Mesh>, &CopGun), Without<CopHand>>,
+    mut hand_query: Query<(&mut Transform, &CopHand), Without<CopGun>>,
+) {
+    if let Some(gun) = actor.get_cur_gun() {
+        let angle = gun.cursor_angle;
+        // 向下
+        if angle >= -120.0 && angle <= -60.0 {
+            //
+        } else if angle >= -60.0 && angle <= 30.0 {
+            //
+        } else if angle >= 30.0 && angle <= 60.0 {
+            //
+        } else if angle >= 60.0 && angle <= 120.0 {
+            //
+        } else if angle >= 120.0 && angle <= 150.0 {
+            //
+        } else {
+            //
+        }
+    }
+    for (mut t, mut mesh, cop_gun) in gun_query.iter_mut() {
+        match actor.get_direction() {
+            ActorDirection::DownLeft | ActorDirection::UpLeft => {
+                t.translation.x = -t.translation.x.abs();
+                *mesh = cop_gun.mesh_flip.clone();
+            }
+            _ => {
+                t.translation.x = t.translation.x.abs();
+                *mesh = cop_gun.mesh.clone();
+            }
+        }
+    }
+    for (mut t, _) in hand_query.iter_mut() {
+        match actor.get_direction() {
+            ActorDirection::DownLeft | ActorDirection::UpLeft => {
+                t.translation.x = t.translation.x.abs();
+            }
+            _ => {
+                t.translation.x = -t.translation.x.abs();
+            }
+        }
+    }
 }
 
 pub fn update_character_sprite(

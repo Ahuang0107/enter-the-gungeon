@@ -98,6 +98,7 @@ fn main() {
             character::update_character_sprite,
             character::play_character_sound,
             character::character_move,
+            character::update_gun_direction,
             res::update_actor,
             ui::cursor::update,
             ui::hp::update,
@@ -108,6 +109,8 @@ fn main() {
     app.run();
 }
 
+pub const CAMERA_FAR: f32 = 10.0;
+
 fn setup_camera(mut c: Commands) {
     c.spawn(Camera3dBundle {
         projection: OrthographicProjection {
@@ -116,7 +119,7 @@ fn setup_camera(mut c: Commands) {
         }
         .into(),
         // TODO 还不确定镜头的合适参数
-        transform: Transform::from_xyz(0.0, 0.0, 200.0).with_scale(Vec3::splat(0.04)),
+        transform: Transform::from_xyz(0.0, 0.0, CAMERA_FAR).with_scale(Vec3::splat(0.04)),
         ..default()
     });
 }

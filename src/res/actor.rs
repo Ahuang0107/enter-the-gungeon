@@ -1,5 +1,3 @@
-use std::f32::consts::SQRT_2;
-
 use bevy::prelude::*;
 
 use crate::res::SCALE_RATIO;
@@ -36,6 +34,7 @@ impl ResActor {
             size: [16, 16],
             offset: [11.0, -2.0],
             hand_offset: [-4.0, -4.0],
+            cursor_angle: 0.0,
         });
         self
     }
@@ -55,7 +54,10 @@ impl ResActor {
     }
     // only for debug inspect
     pub fn update_angle(&mut self, angle: f32) {
-        self.cursor_angle = angle
+        self.cursor_angle = angle;
+        if let Some(ref mut gun) = &mut self.gun {
+            gun.cursor_angle = angle;
+        }
     }
     pub fn get_move_speed(&self) -> f32 {
         self.move_speed
@@ -126,4 +128,5 @@ pub struct ResGun {
     pub size: [u32; 2],
     pub offset: [f32; 2],
     pub hand_offset: [f32; 2],
+    pub cursor_angle: f32,
 }
