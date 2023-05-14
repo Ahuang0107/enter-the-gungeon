@@ -12,6 +12,7 @@ pub struct Cache {
     pub tile_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
     // 主要是tilemap使用mesh
     pub tile_meshes: HashMap<(u32, u32), Handle<Mesh>>,
+    pub tile_meshes_sqrt2: HashMap<(u32, u32), Handle<Mesh>>,
     // char的hand相关的material和mesh
     pub char_hand_image: Handle<Image>,
     pub char_hand_material: Handle<StandardMaterial>,
@@ -28,6 +29,9 @@ pub struct Cache {
 impl Cache {
     pub fn get_tile_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
         self.tile_meshes.get(&key).unwrap()
+    }
+    pub fn get_tile_mesh_sqrt2(&self, key: (u32, u32)) -> &Handle<Mesh> {
+        self.tile_meshes_sqrt2.get(&key).unwrap()
     }
     pub fn get_tile_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.tile_materials.get(tag).unwrap().get(&index).unwrap()

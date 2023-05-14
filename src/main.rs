@@ -87,23 +87,23 @@ fn main() {
     app.add_systems(
         (
             tilemap::setup,
-            ui::cursor::setup,
-            ui::hp::setup,
-            character::setup,
+            // ui::cursor::setup,
+            // ui::hp::setup,
+            // character::setup,
         )
             .in_schedule(OnEnter(AppState::InGame)),
     );
-    app.add_systems(
-        (
-            character::update_character_sprite,
-            character::play_character_sound,
-            character::character_move,
-            res::update_actor,
-            ui::cursor::update,
-            ui::hp::update,
-        )
-            .in_set(OnUpdate(AppState::InGame)),
-    );
+    // app.add_systems(
+    //     (
+    //         character::update_character_sprite,
+    //         character::play_character_sound,
+    //         character::character_move,
+    //         res::update_actor,
+    //         ui::cursor::update,
+    //         ui::hp::update,
+    //     )
+    //         .in_set(OnUpdate(AppState::InGame)),
+    // );
 
     app.run();
 }
@@ -116,9 +116,7 @@ fn setup_camera(mut c: Commands) {
         }
         .into(),
         // TODO 还不确定镜头的合适参数
-        transform: Transform::from_xyz(0.0, 200.0, 200.0)
-            .looking_to(Vec3::new(0.0, -1.0, -1.0), Vec3::Y)
-            .with_scale(Vec3::splat(0.04)),
+        transform: Transform::from_xyz(0.0, 0.0, 200.0).with_scale(Vec3::splat(0.04)),
         ..default()
     });
 }

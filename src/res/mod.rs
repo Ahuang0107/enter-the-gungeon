@@ -16,6 +16,7 @@ mod cache;
 
 pub const SCALE_RATIO: f32 = 0.1;
 pub const GRID_SIZE: f32 = 16.0;
+pub const GRID_SIZE_HALF: f32 = 8.0;
 
 pub fn reset_res(
     mut cache: ResMut<Cache>,
@@ -84,6 +85,13 @@ pub fn reset_res(
     // 汇总好的tile的每种尺寸都创建mesh
     for (width, height) in tile_meshes_set {
         cache.tile_meshes.insert(
+            (width as u32, height as u32),
+            meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+                SCALE_RATIO * width as f32,
+                SCALE_RATIO * height as f32,
+            )))),
+        );
+        cache.tile_meshes_sqrt2.insert(
             (width as u32, height as u32),
             meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
                 SCALE_RATIO * width as f32,
@@ -239,7 +247,7 @@ pub fn update_actor(
     }
     for mut t in camera_query.iter_mut() {
         let mut actual_pos = actor.get_actual_pos();
-        actual_pos.y += 200.0;
+        // actual_pos.y += .0;
         actual_pos.z += 200.0;
         t.translation = actual_pos;
     }
