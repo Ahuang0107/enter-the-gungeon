@@ -17,7 +17,6 @@ pub struct Cache {
     // 每个actor分一个group，每组frame再分group
     pub actors_images: HashMap<String, ActorAssets<Image>>,
     pub actors_materials: HashMap<String, ActorAssets<StandardMaterial>>,
-    pub actors_tag_frames: HashMap<String, HashMap<String, usize>>,
     // char的hand相关的material和mesh
     pub char_hand_image: Handle<Image>,
     pub char_hand_material: Handle<StandardMaterial>,
@@ -42,19 +41,8 @@ impl Cache {
     pub fn get_tile_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.tile_materials.get(tag).unwrap().get(&index).unwrap()
     }
-    pub fn get_actor_material(
-        &self,
-        name: &str,
-        tag: &str,
-        index: usize,
-    ) -> &Handle<StandardMaterial> {
-        self.actors_materials
-            .get(name)
-            .unwrap()
-            .get_frame(tag, index)
-    }
-    pub fn get_actor_tag_frames(&self, name: &str) -> &HashMap<String, usize> {
-        self.actors_tag_frames.get(name).unwrap()
+    pub fn get_actor_materials(&self, name: &str, tag: &str) -> &Vec<Handle<StandardMaterial>> {
+        self.actors_materials.get(name).unwrap().get_frames(tag)
     }
     pub fn get_character_mesh(&self) -> &Handle<Mesh> {
         self.old_meshes.get("Tile28").unwrap()
@@ -94,8 +82,7 @@ impl<T: Asset> ActorAssets<T> {
             0
         }
     }
-    pub fn get_frame(&self, tag: &str, index: usize) -> &Handle<T> {
-        debug!("tag {}, index {}", tag, index);
-        self.assets.get(tag).unwrap().get(index).unwrap()
+    pub fn get_frames(&self, tag: &str) -> &Vec<Handle<T>> {
+        self.assets.get(tag).unwrap()
     }
 }

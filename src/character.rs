@@ -49,8 +49,6 @@ pub struct CopHand;
 
 pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
     c.spawn(PbrBundle {
-        mesh: cache.get_character_mesh().clone(),
-        material: cache.get_actor_material("Convict", "idle-f-2h", 0).clone(),
         transform: Transform {
             translation: actor.get_actual_pos(),
             ..default()
@@ -96,11 +94,8 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
             });
         }
     })
-    .insert(ActorMaterialSprite::from("Convict", "idle-f-2h", 0))
-    .insert(ActorSpriteAnimation::from_loop(
-        cache.get_actor_tag_frames("Convict").clone(),
-        0.1,
-    ))
+    .insert(ActorMaterialSprite::default())
+    .insert(ActorSpriteAnimation::from_loop("Convict", "idle-f-2h", 0.1))
     .insert(CopActor)
     .insert(NotShadowCaster::default())
     .insert(Name::new("Character"));
@@ -485,20 +480,24 @@ pub fn play_character_sound(
 ) {
     if !audio.is_playing_sound() {
         for sprite in query.iter() {
-            match sprite.index {
-                17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => match rand::thread_rng().gen_range(1..4) {
-                    1 => {
-                        audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
-                    }
-                    2 => {
-                        audio.play(asset_server.load("sound/barefoot_stone_02.wav"));
-                    }
-                    3 => {
-                        audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
+            if let Some(index) = sprite.index() {
+                match index {
+                    17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => {
+                        match rand::thread_rng().gen_range(1..4) {
+                            1 => {
+                                audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
+                            }
+                            2 => {
+                                audio.play(asset_server.load("sound/barefoot_stone_02.wav"));
+                            }
+                            3 => {
+                                audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
+                            }
+                            _ => {}
+                        }
                     }
                     _ => {}
-                },
-                _ => {}
+                }
             }
         }
     }

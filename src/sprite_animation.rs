@@ -1,27 +1,36 @@
-use std::collections::HashMap;
-
 use bevy::prelude::*;
 
 use crate::res::Cache;
 
+#[derive(Clone, Debug, Default, Reflect)]
+pub struct ActorSpriteDetail {
+    name: String,
+    tag: String,
+    index: usize,
+}
+
 #[derive(Clone, Debug, Default, Component, Reflect)]
 pub struct ActorMaterialSprite {
-    pub name: String,
-    // 调整了逻辑，index对应的是cache中存储的material对应的index
-    pub tag: String,
-    pub index: usize,
+    /// only for display
+    /// always update from ActorSpriteAnimation
+    #[reflect(ignore)]
+    detail: Option<ActorSpriteDetail>,
+    material: Option<Handle<StandardMaterial>>,
     pub flip_x: bool,
     changed: bool,
 }
 
 impl ActorMaterialSprite {
-    pub fn from(name: &str, tag: &str, index: usize) -> Self {
-        Self {
-            name: name.to_string(),
-            tag: tag.to_string(),
-            index,
-            flip_x: false,
-            changed: true,
+    pub fn update(&mut self, material: &Handle<StandardMaterial>, detail: &ActorSpriteDetail) {
+        self.material = Some(material.clone());
+        self.changed = true;
+        self.detail = Some(detail.clone());
+    }
+    pub fn index(&self) -> Option<usize> {
+        if let Some(detail) = &self.detail {
+            Some(detail.index)
+        } else {
+            None
         }
     }
 }
@@ -36,9 +45,9 @@ pub fn update_sprite(
 ) {
     for (mut material_handle, mut mesh_handle, mut sprite) in query.iter_mut() {
         if sprite.changed {
-            *material_handle = cache
-                .get_actor_material(&sprite.name, &sprite.tag, sprite.index)
-                .clone();
+            if let Some(material) = &sprite.material {
+                *material_handle = material.clone();
+            }
             if sprite.flip_x {
                 *mesh_handle = cache.get_character_mesh_flip().clone();
             } else {
@@ -53,11 +62,7 @@ pub fn update_sprite(
 #[derive(Component, Reflect)]
 pub struct ActorSpriteAnimation {
     timer: Timer,
-    /// 不同 tag 对应的帧长度
-    #[reflect(ignore)]
-    tag_frames: HashMap<String, usize>,
-    cur_tag: String,
-    cur_index: usize,
+    cur: ActorSpriteDetail,
     is_loop: bool,
     finished: bool,
     just_last: bool,
@@ -65,69 +70,37 @@ pub struct ActorSpriteAnimation {
 
 #[allow(dead_code)]
 impl ActorSpriteAnimation {
-    pub fn from_loop(frames_groups: HashMap<String, usize>, interval: f32) -> Self {
-        Self::from(frames_groups, interval, true)
+    pub fn from_loop(name: &str, tag: &str, interval: f32) -> Self {
+        Self::from(name, tag, interval, true)
     }
-    pub fn from_once(frames_size: usize, interval: f32) -> Self {
-        Self::from(
-            HashMap::from([(String::new(), frames_size)]),
-            interval,
-            false,
-        )
+    pub fn from_once(name: &str, tag: &str, interval: f32) -> Self {
+        Self::from(name, tag, interval, false)
     }
-    fn from(frames: HashMap<String, usize>, interval: f32, is_loop: bool) -> Self {
-        assert!(frames.len() > 0);
-        let mut cur_tag = None;
-        for (name, _) in frames.iter() {
-            if cur_tag.is_none() {
-                cur_tag = Some(name.clone());
-                break;
-            }
-        }
+    fn from(name: &str, tag: &str, interval: f32, is_loop: bool) -> Self {
         Self {
             timer: Timer::from_seconds(interval, TimerMode::Repeating),
-            tag_frames: frames,
-            cur_tag: cur_tag.unwrap(),
-            cur_index: 0,
+            cur: ActorSpriteDetail {
+                name: name.to_string(),
+                tag: tag.to_string(),
+                index: 0,
+            },
             is_loop,
             finished: false,
             just_last: false,
         }
     }
-    /// 更新当前循环的 frame 的 tag，如果相比原来有变化则返回true，否则返回false
-    pub fn update(&mut self, tag: &str) -> bool {
-        if tag == self.cur_tag {
-            false
-        } else {
-            self.cur_tag = tag.to_string();
-            self.cur_index = 0;
-            true
-        }
-    }
-    /// 更新到下一帧
-    pub fn next_frame(&mut self) -> Option<(&str, usize)> {
-        let &frames_size = self.tag_frames.get(&self.cur_tag).unwrap();
-        let mut cur_frame_index = self.cur_index + 1;
-        if cur_frame_index >= frames_size {
-            cur_frame_index = 0;
-            if !self.is_loop {
-                self.finished = true;
-            }
-        } else if cur_frame_index == frames_size - 1 {
-            self.just_last = true;
-        }
-        if self.finished {
-            return None;
-        } else {
-            self.cur_index = cur_frame_index;
-            Some((self.cur_tag.as_str(), self.cur_index))
+    /// 更新当前循环的 frame 的 tag
+    pub fn update(&mut self, tag: &str) {
+        if !self.if_tag(tag) {
+            self.cur.tag = tag.to_string();
+            self.cur.index = 0;
         }
     }
     /// 判断当前是否在某一个状态
-    pub fn if_tag(&self, tag: &str) -> bool {
-        self.cur_tag == tag
+    fn if_tag(&self, tag: &str) -> bool {
+        self.cur.tag == tag
     }
-    pub fn if_finished(&self) -> bool {
+    fn if_finished(&self) -> bool {
         self.finished
     }
     pub fn if_just_last_frame(&self) -> bool {
@@ -137,19 +110,31 @@ impl ActorSpriteAnimation {
 
 pub fn sprite_animation(
     time: Res<Time>,
+    cache: Res<Cache>,
     mut query: Query<(&mut ActorSpriteAnimation, &mut ActorMaterialSprite)>,
 ) {
-    for (mut animation, mut sprite) in &mut query {
-        if animation.just_last {
-            animation.just_last = false;
+    for (mut anima, mut sprite) in &mut query {
+        if anima.just_last {
+            anima.just_last = false;
         }
-        if !animation.if_finished() {
-            animation.timer.tick(time.delta());
-            if animation.timer.just_finished() {
-                if let Some((tag, index)) = animation.next_frame() {
-                    sprite.tag = tag.to_string();
-                    sprite.index = index;
-                    sprite.changed = true;
+        if !anima.if_finished() {
+            anima.timer.tick(time.delta());
+            if anima.timer.just_finished() {
+                let frames = cache.get_actor_materials(&anima.cur.name, &anima.cur.tag);
+                let mut cur_frame_index = anima.cur.index + 1;
+                if cur_frame_index >= frames.len() {
+                    cur_frame_index = 0;
+                    if !anima.is_loop {
+                        anima.finished = true;
+                    }
+                } else if cur_frame_index == frames.len() - 1 {
+                    anima.just_last = true;
+                }
+                if !anima.finished {
+                    anima.cur.index = cur_frame_index;
+                    if let Some(frame) = frames.get(anima.cur.index) {
+                        sprite.update(frame, &anima.cur);
+                    }
                 }
             }
         }

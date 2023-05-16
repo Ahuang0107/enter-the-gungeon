@@ -119,12 +119,10 @@ pub fn reset_res(
     {
         let mut convict_images = ActorAssets::default();
         let mut convict_materials = ActorAssets::default();
-        let mut convict_tag_frames = HashMap::new();
         for (tag, frames) in utils::load_actor_sprite(
             "assets/art/character/The Convict.json",
             "assets/art/character/The Convict.png",
         ) {
-            let frames_size = frames.len();
             for frame in frames {
                 let image_handle = images.add(frame);
                 let material_handle = materials.add(StandardMaterial {
@@ -137,7 +135,6 @@ pub fn reset_res(
                 convict_images.insert_frame(&tag, image_handle);
                 convict_materials.insert_frame(&tag, material_handle);
             }
-            convict_tag_frames.insert(tag.clone(), frames_size);
         }
         cache
             .actors_images
@@ -145,9 +142,6 @@ pub fn reset_res(
         cache
             .actors_materials
             .insert(String::from("Convict"), convict_materials);
-        cache
-            .actors_tag_frames
-            .insert(String::from("Convict"), convict_tag_frames);
     }
 
     fn initial_texture<P>(
