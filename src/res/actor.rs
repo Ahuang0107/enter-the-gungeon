@@ -46,11 +46,9 @@ impl ResActor {
         self.pos
     }
     pub fn get_actual_pos(&self) -> Vec3 {
-        Vec3::new(
-            self.pos[0] as f32 * SCALE_RATIO,
-            (28 / 2) as f32 * SQRT_2 * SCALE_RATIO,
-            -self.pos[1] as f32 * SCALE_RATIO * SQRT_2,
-        )
+        let y = self.pos[1] as f32 * SCALE_RATIO;
+        let z = -y;
+        Vec3::new(self.pos[0] as f32 * SCALE_RATIO, y, z)
     }
     pub fn get_cur_hp(&self) -> u8 {
         self.hp

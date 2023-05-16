@@ -104,13 +104,13 @@ pub fn reset_res(
         String::from("Tile28"),
         meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
             28.0 * SCALE_RATIO,
-            28.0 * SCALE_RATIO * SQRT_2,
+            28.0 * SCALE_RATIO,
         )))),
     );
     cache.old_meshes.insert(
         String::from("Tile28Flip"),
         meshes.add(Mesh::from(shape::Quad {
-            size: Vec2::new(28.0 * SCALE_RATIO, 28.0 * SCALE_RATIO * SQRT_2),
+            size: Vec2::new(28.0 * SCALE_RATIO, 28.0 * SCALE_RATIO),
             flip: true,
         })),
     );

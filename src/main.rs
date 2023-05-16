@@ -87,23 +87,23 @@ fn main() {
     app.add_systems(
         (
             tilemap::setup,
-            // ui::cursor::setup,
-            // ui::hp::setup,
-            // character::setup,
+            ui::cursor::setup,
+            ui::hp::setup,
+            character::setup,
         )
             .in_schedule(OnEnter(AppState::InGame)),
     );
-    // app.add_systems(
-    //     (
-    //         character::update_character_sprite,
-    //         character::play_character_sound,
-    //         character::character_move,
-    //         res::update_actor,
-    //         ui::cursor::update,
-    //         ui::hp::update,
-    //     )
-    //         .in_set(OnUpdate(AppState::InGame)),
-    // );
+    app.add_systems(
+        (
+            character::update_character_sprite,
+            character::play_character_sound,
+            character::character_move,
+            res::update_actor,
+            ui::cursor::update,
+            ui::hp::update,
+        )
+            .in_set(OnUpdate(AppState::InGame)),
+    );
 
     app.run();
 }

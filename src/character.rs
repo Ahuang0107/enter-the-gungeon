@@ -237,12 +237,12 @@ pub fn character_move(
     move_direction.detect_key(&keyboard);
     let mut old_pos = [
         actor.get_actual_pos().x / SCALE_RATIO,
-        -(actor.get_actual_pos().z / SCALE_RATIO) / SQRT_2,
+        actor.get_actual_pos().y / SCALE_RATIO,
     ];
     let speed = time.delta_seconds() * actor.get_move_speed();
     let to_grid_pos = |pos: [f32; 2]| -> [i32; 2] {
         // TODO 目前不知道为什么整体偏移了(8,-24)
-        let pos = [pos[0] + 8.0, pos[1] + 24.0];
+        let pos = [pos[0] + 8.0, pos[1] + 8.0];
         [
             (pos[0] / GRID_SIZE).floor() as i32,
             (pos[1] / GRID_SIZE).floor() as i32,
