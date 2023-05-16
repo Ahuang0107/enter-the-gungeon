@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
 pub use actor::{ActorAction, ActorDirection, ResActor, ResGun};
-pub use cache::Cache;
+pub use cache::{ActorAssets, Cache};
 use world_generator::LevelModel;
 
 use crate::character::CopActor;
@@ -115,6 +115,41 @@ pub fn reset_res(
         })),
     );
 
+    // 加载actor convict相关资源
+    {
+        let mut convict_images = ActorAssets::default();
+        let mut convict_materials = ActorAssets::default();
+        let mut convict_tag_frames = HashMap::new();
+        for (tag, frames) in utils::load_actor_sprite(
+            "assets/art/character/The Convict.json",
+            "assets/art/character/The Convict.png",
+        ) {
+            let frames_size = frames.len();
+            for frame in frames {
+                let image_handle = images.add(frame);
+                let material_handle = materials.add(StandardMaterial {
+                    base_color_texture: Some(image_handle.clone()),
+                    alpha_mode: AlphaMode::Blend,
+                    unlit: true,
+                    depth_bias: 10.0,
+                    ..default()
+                });
+                convict_images.insert_frame(&tag, image_handle);
+                convict_materials.insert_frame(&tag, material_handle);
+            }
+            convict_tag_frames.insert(tag.clone(), frames_size);
+        }
+        cache
+            .actors_images
+            .insert(String::from("Convict"), convict_images);
+        cache
+            .actors_materials
+            .insert(String::from("Convict"), convict_materials);
+        cache
+            .actors_tag_frames
+            .insert(String::from("Convict"), convict_tag_frames);
+    }
+
     fn initial_texture<P>(
         path: P,
         tile_size: Vec2,
@@ -174,20 +209,6 @@ pub fn reset_res(
         }
         (texture_atlas, material_set)
     }
-
-    let (atlas, material_set) = initial_texture(
-        "assets/art/character/The Covict.png",
-        Vec2::new(28.0, 28.0),
-        9,
-        9,
-        &mut images,
-        &mut materials,
-        10.0,
-    );
-    cache.tile_images.insert(String::from("Covict"), atlas);
-    cache
-        .tile_materials
-        .insert(String::from("Covict"), material_set);
 
     cache.char_hand_mesh = meshes.add(Mesh::from(shape::Quad {
         size: Vec2::new(4.0 * SCALE_RATIO, 4.0 * SCALE_RATIO),

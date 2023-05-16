@@ -5,7 +5,7 @@ use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlu
 
 use crate::cursor::ResCursor;
 use crate::res::ResActor;
-use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
+use crate::sprite_animation::{ActorMaterialSprite, ActorSpriteAnimation};
 
 pub struct DebugPlugin;
 
@@ -14,8 +14,8 @@ impl Plugin for DebugPlugin {
         app.add_plugin(WorldInspectorPlugin::new())
             .add_plugin(ScreenDiagnosticsPlugin::default())
             .add_plugin(ScreenFrameDiagnosticsPlugin)
-            .register_type::<MaterialSprite>()
-            .register_type::<SpriteAnimation>()
+            .register_type::<ActorMaterialSprite>()
+            .register_type::<ActorSpriteAnimation>()
             // .add_system(move_camera)
             .add_system(scroll_camera);
         {

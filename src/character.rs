@@ -7,27 +7,33 @@ use rand::Rng;
 
 use crate::cursor::ResCursor;
 use crate::res::{ActorAction, ActorDirection, Cache, ResActor, GRID_SIZE, SCALE_RATIO};
-use crate::sprite_animation::{MaterialSprite, SpriteAnimation};
+use crate::sprite_animation::{ActorMaterialSprite, ActorSpriteAnimation};
 
-const TAG_IDLE_DOWN: &'static str = "Idle_Down";
-const TAG_IDLE_DOWN_RIGHT: &'static str = "Idle_DownRight";
-const TAG_IDLE_UP: &'static str = "Idle_Up";
-const TAG_IDLE_UP_RIGHT: &'static str = "Idle_UpRight";
-const TAG_WALKING_DOWN: &'static str = "Walking_Down";
-const TAG_WALKING_DOWN_RIGHT: &'static str = "Walking_DownRight";
-const TAG_WALKING_UP: &'static str = "Walking_Up";
-const TAG_WALKING_UP_RIGHT: &'static str = "Walking_UpRight";
+pub enum ActorTag {
+    IdleF1h,
+    IdleB1h,
+    IdleFs1h,
+    IdleBs0h,
+    WalkF1h,
+    WalkB1h,
+    WalkFs1h,
+    WalkBs0h,
+}
 
-const CHARACTER_FRAMES: [(&str, &[u8]); 8] = [
-    (TAG_IDLE_DOWN, &[0, 1, 2, 3]),
-    (TAG_IDLE_DOWN_RIGHT, &[4, 5, 6, 7]),
-    (TAG_IDLE_UP, &[8, 9, 10, 11]),
-    (TAG_IDLE_UP_RIGHT, &[12, 13, 14, 15]),
-    (TAG_WALKING_DOWN, &[16, 17, 18, 19, 20, 21]),
-    (TAG_WALKING_DOWN_RIGHT, &[22, 23, 24, 25, 26, 27]),
-    (TAG_WALKING_UP, &[28, 29, 30, 31, 32, 33]),
-    (TAG_WALKING_UP_RIGHT, &[34, 35, 36, 37, 38, 39]),
-];
+impl ActorTag {
+    pub fn tag(&self) -> &str {
+        match self {
+            Self::IdleF1h => "idle-f-1h",
+            Self::IdleB1h => "idle-b-1h",
+            Self::IdleFs1h => "idle-fs-1h",
+            Self::IdleBs0h => "idle-bs-0h",
+            Self::WalkF1h => "walk-f-1h",
+            Self::WalkB1h => "walk-b-1h",
+            Self::WalkFs1h => "walk-fs-1h",
+            Self::WalkBs0h => "walk-bs-0h",
+        }
+    }
+}
 
 #[derive(Component)]
 pub struct CopActor;
@@ -44,7 +50,7 @@ pub struct CopHand;
 pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
     c.spawn(PbrBundle {
         mesh: cache.get_character_mesh().clone(),
-        material: cache.get_tile_material("Covict", 0).clone(),
+        material: cache.get_actor_material("Convict", "idle-f-2h", 0).clone(),
         transform: Transform {
             translation: actor.get_actual_pos(),
             ..default()
@@ -90,8 +96,11 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
             });
         }
     })
-    .insert(MaterialSprite::from("Covict", 0))
-    .insert(SpriteAnimation::from_loop(&CHARACTER_FRAMES, 0.1))
+    .insert(ActorMaterialSprite::from("Convict", "idle-f-2h", 0))
+    .insert(ActorSpriteAnimation::from_loop(
+        cache.get_actor_tag_frames("Convict").clone(),
+        0.1,
+    ))
     .insert(CopActor)
     .insert(NotShadowCaster::default())
     .insert(Name::new("Character"));
@@ -145,56 +154,55 @@ pub fn update_gun_direction(
 
 pub fn update_character_sprite(
     actor: Res<ResActor>,
-    mut query: Query<(&mut MaterialSprite, &mut SpriteAnimation), With<CopActor>>,
+    mut query: Query<(&mut ActorMaterialSprite, &mut ActorSpriteAnimation), With<CopActor>>,
 ) {
     for (mut sprite, mut anima) in query.iter_mut() {
         match actor.get_action() {
             ActorAction::Idle => match actor.get_direction() {
                 ActorDirection::Down => {
-                    anima.update(TAG_IDLE_DOWN);
+                    anima.update(ActorTag::IdleF1h.tag());
                 }
                 ActorDirection::DownLeft => {
-                    anima.update(TAG_IDLE_DOWN_RIGHT);
+                    anima.update(ActorTag::IdleFs1h.tag());
                     sprite.flip_x = true;
                 }
                 ActorDirection::DownRight => {
-                    anima.update(TAG_IDLE_DOWN_RIGHT);
+                    anima.update(ActorTag::IdleFs1h.tag());
                     sprite.flip_x = false;
                 }
                 ActorDirection::Up => {
-                    anima.update(TAG_IDLE_UP);
+                    anima.update(ActorTag::IdleB1h.tag());
                 }
                 ActorDirection::UpLeft => {
-                    anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = false;
+                    anima.update(ActorTag::IdleBs0h.tag());
+                    sprite.flip_x = true;
                 }
                 ActorDirection::UpRight => {
-                    // TODO 这里的缺了贴图，所以少了一种对应的状态
-                    anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = true;
+                    anima.update(ActorTag::IdleBs0h.tag());
+                    sprite.flip_x = false;
                 }
             },
             ActorAction::Walking => match actor.get_direction() {
                 ActorDirection::Down => {
-                    anima.update(TAG_WALKING_DOWN);
+                    anima.update(ActorTag::WalkF1h.tag());
                 }
                 ActorDirection::DownLeft => {
-                    anima.update(TAG_WALKING_DOWN_RIGHT);
+                    anima.update(ActorTag::WalkFs1h.tag());
                     sprite.flip_x = true;
                 }
                 ActorDirection::DownRight => {
-                    anima.update(TAG_WALKING_DOWN_RIGHT);
+                    anima.update(ActorTag::WalkFs1h.tag());
                     sprite.flip_x = false;
                 }
                 ActorDirection::Up => {
-                    anima.update(TAG_WALKING_UP);
+                    anima.update(ActorTag::WalkB1h.tag());
                 }
                 ActorDirection::UpLeft => {
-                    anima.update(TAG_WALKING_UP_RIGHT);
+                    anima.update(ActorTag::WalkBs0h.tag());
                     sprite.flip_x = true;
                 }
                 ActorDirection::UpRight => {
-                    anima.update(TAG_WALKING_UP_RIGHT);
+                    anima.update(ActorTag::WalkBs0h.tag());
                     sprite.flip_x = false;
                 }
             },
@@ -471,7 +479,7 @@ pub fn character_move(
 }
 
 pub fn play_character_sound(
-    query: Query<&MaterialSprite, With<CopActor>>,
+    query: Query<&ActorMaterialSprite, With<CopActor>>,
     asset_server: Res<AssetServer>,
     audio: Res<bevy_kira_audio::Audio>,
 ) {

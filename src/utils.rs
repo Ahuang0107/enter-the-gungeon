@@ -97,3 +97,41 @@ where
     }
     texture_atlas
 }
+
+pub fn load_actor_sprite<P>(config_path: P, image_path: P) -> HashMap<String, Vec<Image>>
+where
+    P: AsRef<std::path::Path>,
+{
+    let mut result: HashMap<String, Vec<Image>> = HashMap::new();
+
+    let config = aseprite::Output::from(config_path).unwrap();
+    let mut dynamic_image = image::open(image_path).unwrap();
+    let buffer = dynamic_image.as_mut_rgba8().unwrap();
+    for item in config.frames {
+        let tag = item.filename;
+        let sub_buffer = image::imageops::crop(
+            buffer,
+            item.frame.x,
+            item.frame.y,
+            item.frame.w,
+            item.frame.h,
+        )
+        .to_image();
+        let sub_image = Image::new(
+            Extent3d {
+                width: sub_buffer.width(),
+                height: sub_buffer.height(),
+                depth_or_array_layers: 1,
+            },
+            TextureDimension::D2,
+            sub_buffer.into_raw(),
+            TextureFormat::Rgba8UnormSrgb,
+        );
+        if let Some(frames) = result.get_mut(&tag) {
+            frames.push(sub_image);
+        } else {
+            result.insert(tag, vec![sub_image]);
+        }
+    }
+    result
+}

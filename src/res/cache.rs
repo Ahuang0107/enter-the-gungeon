@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use bevy::asset::Asset;
 use bevy::prelude::*;
 
 use world_generator::LevelModel;
@@ -13,6 +14,10 @@ pub struct Cache {
     // 主要是tilemap使用mesh
     pub tile_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     pub tile_meshes_sqrt2: HashMap<(u32, u32), Handle<Mesh>>,
+    // 每个actor分一个group，每组frame再分group
+    pub actors_images: HashMap<String, ActorAssets<Image>>,
+    pub actors_materials: HashMap<String, ActorAssets<StandardMaterial>>,
+    pub actors_tag_frames: HashMap<String, HashMap<String, usize>>,
     // char的hand相关的material和mesh
     pub char_hand_image: Handle<Image>,
     pub char_hand_material: Handle<StandardMaterial>,
@@ -37,6 +42,20 @@ impl Cache {
     pub fn get_tile_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.tile_materials.get(tag).unwrap().get(&index).unwrap()
     }
+    pub fn get_actor_material(
+        &self,
+        name: &str,
+        tag: &str,
+        index: usize,
+    ) -> &Handle<StandardMaterial> {
+        self.actors_materials
+            .get(name)
+            .unwrap()
+            .get_frame(tag, index)
+    }
+    pub fn get_actor_tag_frames(&self, name: &str) -> &HashMap<String, usize> {
+        self.actors_tag_frames.get(name).unwrap()
+    }
     pub fn get_character_mesh(&self) -> &Handle<Mesh> {
         self.old_meshes.get("Tile28").unwrap()
     }
@@ -55,5 +74,28 @@ impl Cache {
     }
     pub fn get_hp_image(&self, index: u8) -> &Handle<Image> {
         self.ui_hp_images.get(&index).unwrap()
+    }
+}
+
+#[derive(Default)]
+pub struct ActorAssets<T: Asset> {
+    assets: HashMap<String, Vec<Handle<T>>>,
+}
+
+impl<T: Asset> ActorAssets<T> {
+    /// 指定tag插入一帧资源，并返回该帧的索引
+    pub fn insert_frame(&mut self, tag: &str, frame: Handle<T>) -> usize {
+        if let Some(frames) = self.assets.get_mut(tag) {
+            let len = frames.len();
+            frames.push(frame);
+            len
+        } else {
+            self.assets.insert(tag.to_string(), vec![frame]);
+            0
+        }
+    }
+    pub fn get_frame(&self, tag: &str, index: usize) -> &Handle<T> {
+        debug!("tag {}, index {}", tag, index);
+        self.assets.get(tag).unwrap().get(index).unwrap()
     }
 }
