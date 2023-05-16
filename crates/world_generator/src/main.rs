@@ -76,9 +76,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             for level in project.levels.iter() {
                 let size = [level.px_wid, level.px_hei];
                 let grid_size = [size[0] / 16, size[1] / 16];
-                let grid_offset = [level.world_x / 16, -level.world_y / 16];
-                let grid_offset = [grid_offset[0], grid_offset[1] - grid_size[1] as i32];
+                let grid_offset = [
+                    level.world_x / 16,
+                    (-level.world_y / 16) - grid_size[1] as i32,
+                ];
                 let mut room = RoomModel {
+                    display_name: level.identifier.clone(),
                     world_pos: grid_offset,
                     size: grid_size,
                     ..Default::default()

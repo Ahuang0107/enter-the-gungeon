@@ -1,5 +1,3 @@
-use std::f32::consts::SQRT_2;
-
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
@@ -16,7 +14,7 @@ impl ResCursor {
     pub fn get_tilemap_pos(&self) -> [f32; 2] {
         [
             self.world_pos.x / SCALE_RATIO,
-            -((self.world_pos.z - self.world_pos.y) / SCALE_RATIO) / SQRT_2,
+            self.world_pos.y / SCALE_RATIO,
         ]
     }
     pub fn get_ui_pos(&self) -> Vec2 {

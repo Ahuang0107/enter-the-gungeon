@@ -2,6 +2,10 @@ use std::collections::HashMap;
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default, Debug)]
 pub struct LevelModel {
+    /// default brith point (in grid) in the level
+    ///
+    /// ex: brith point = `[-5,10]`, grid size = 16
+    /// represent the actual brith point is `[-80.0,160.0]`
     pub brith_point: [i32; 2],
     pub rooms: Vec<RoomModel>,
     pub tilesets: Vec<Tileset>,
@@ -22,6 +26,7 @@ impl LevelModel {
 pub struct RoomModel {
     /// 这里的坐标是根据room的左下角位置计算的
     /// 同时也需要注意room内的tile的坐标都是以这个点作为原点配置的
+    pub display_name: String,
     pub world_pos: [i32; 2],
     pub size: [u32; 2],
     pub walls: Vec<TileGroup>,

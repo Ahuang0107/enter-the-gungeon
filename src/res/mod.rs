@@ -28,7 +28,7 @@ pub fn reset_res(
 ) {
     let level = LevelModel::from("assets/levels/demo_output.json").unwrap();
     cache.levels.push(level.clone());
-    actor.update_pos({
+    actor.set_tilemap_pos({
         let pos = level.brith_point;
         [pos[0] as f32 * GRID_SIZE, pos[1] as f32 * GRID_SIZE]
     });
@@ -190,7 +190,7 @@ pub fn reset_res(
         .insert(String::from("Covict"), material_set);
 
     cache.char_hand_mesh = meshes.add(Mesh::from(shape::Quad {
-        size: Vec2::new(4.0 * SCALE_RATIO, 4.0 * SCALE_RATIO * SQRT_2),
+        size: Vec2::new(4.0 * SCALE_RATIO, 4.0 * SCALE_RATIO),
         flip: false,
     }));
     cache.char_hand_image = server.load("art/character/hand.png");
@@ -222,14 +222,14 @@ pub fn reset_res(
         cache.gun_meshes.insert(
             (16, 16),
             meshes.add(Mesh::from(shape::Quad {
-                size: Vec2::new(16.0 * SCALE_RATIO, 16.0 * SCALE_RATIO * SQRT_2),
+                size: Vec2::new(16.0 * SCALE_RATIO, 16.0 * SCALE_RATIO),
                 flip: false,
             })),
         );
         cache.gun_meshes_flip.insert(
             (16, 16),
             meshes.add(Mesh::from(shape::Quad {
-                size: Vec2::new(16.0 * SCALE_RATIO, 16.0 * SCALE_RATIO * SQRT_2),
+                size: Vec2::new(16.0 * SCALE_RATIO, 16.0 * SCALE_RATIO),
                 flip: true,
             })),
         );

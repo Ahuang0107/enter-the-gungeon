@@ -15,18 +15,18 @@ pub fn setup(mut c: Commands, cache: Res<Cache>) {
     c.spawn(SpatialBundle::default())
         .insert(Name::new("Rooms"))
         .with_children(|p| {
-            for (index, room) in level.rooms.iter().enumerate() {
+            for room in level.rooms.iter() {
                 let room_x = room.world_pos[0] as f32 * GRID_SIZE * SCALE_RATIO;
-                let room_y = -room.world_pos[1] as f32 * GRID_SIZE * SCALE_RATIO;
+                let room_y = room.world_pos[1] as f32 * GRID_SIZE * SCALE_RATIO;
                 let room_z = -room_y;
                 p.spawn(SpatialBundle {
                     transform: Transform {
-                        translation: Vec3::new(room_x, -room_y, room_z),
+                        translation: Vec3::new(room_x, room_y, room_z),
                         ..default()
                     },
                     ..default()
                 })
-                .insert(Name::new(format!("Room{index:#02x?}")))
+                .insert(Name::new(room.display_name.clone()))
                 .with_children(|p| {
                     // 添加墙壁
                     p.spawn(SpatialBundle {

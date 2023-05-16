@@ -71,6 +71,7 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
                 mesh: cache.get_gun_mesh((size[0], size[1]), false).clone(),
                 mesh_flip: cache.get_gun_mesh((size[0], size[1]), true).clone(),
             })
+            .insert(NotShadowCaster::default())
             .insert(Name::new(name))
             .with_children(|p| {
                 p.spawn(PbrBundle {
@@ -84,6 +85,7 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
                     ..default()
                 })
                 .insert(CopHand)
+                .insert(NotShadowCaster::default())
                 .insert(Name::new("Hand"));
             });
         }
@@ -164,11 +166,12 @@ pub fn update_character_sprite(
                 }
                 ActorDirection::UpLeft => {
                     anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = true;
+                    sprite.flip_x = false;
                 }
                 ActorDirection::UpRight => {
+                    // TODO 这里的缺了贴图，所以少了一种对应的状态
                     anima.update(TAG_IDLE_UP_RIGHT);
-                    sprite.flip_x = false;
+                    sprite.flip_x = true;
                 }
             },
             ActorAction::Walking => match actor.get_direction() {
@@ -314,7 +317,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_left_pos)
                 && cache.levels[0].contains_floor(need_detect_right_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         (MoveDirectionX::None, MoveDirectionY::Down) => {
@@ -324,7 +327,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_left_pos)
                 && cache.levels[0].contains_floor(need_detect_right_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         (MoveDirectionX::Left, MoveDirectionY::None) => {
@@ -334,7 +337,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_top_pos)
                 && cache.levels[0].contains_floor(need_detect_bottom_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         (MoveDirectionX::Right, MoveDirectionY::None) => {
@@ -344,7 +347,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_top_pos)
                 && cache.levels[0].contains_floor(need_detect_bottom_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         (MoveDirectionX::Left, MoveDirectionY::Up) => {
@@ -355,7 +358,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_left_pos)
                 && cache.levels[0].contains_floor(need_detect_right_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
                 old_pos = new_pos;
             }
             let new_pos = [old_pos[0] - speed * ratio, old_pos[1]];
@@ -364,7 +367,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_top_pos)
                 && cache.levels[0].contains_floor(need_detect_bottom_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         (MoveDirectionX::Left, MoveDirectionY::Down) => {
@@ -375,7 +378,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_left_pos)
                 && cache.levels[0].contains_floor(need_detect_right_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
                 old_pos = new_pos;
             }
             let new_pos = [old_pos[0] - speed * ratio, old_pos[1]];
@@ -384,7 +387,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_top_pos)
                 && cache.levels[0].contains_floor(need_detect_bottom_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         (MoveDirectionX::Right, MoveDirectionY::Up) => {
@@ -395,7 +398,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_left_pos)
                 && cache.levels[0].contains_floor(need_detect_right_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
                 old_pos = new_pos;
             }
             let new_pos = [old_pos[0] + speed * ratio, old_pos[1]];
@@ -404,7 +407,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_top_pos)
                 && cache.levels[0].contains_floor(need_detect_bottom_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         (MoveDirectionX::Right, MoveDirectionY::Down) => {
@@ -415,7 +418,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_left_pos)
                 && cache.levels[0].contains_floor(need_detect_right_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
                 old_pos = new_pos;
             }
             let new_pos = [old_pos[0] + speed * ratio, old_pos[1]];
@@ -424,7 +427,7 @@ pub fn character_move(
             if cache.levels[0].contains_floor(need_detect_top_pos)
                 && cache.levels[0].contains_floor(need_detect_bottom_pos)
             {
-                actor.update_pos(new_pos);
+                actor.set_tilemap_pos(new_pos);
             }
         }
         _ => {

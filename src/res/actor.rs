@@ -4,6 +4,7 @@ use crate::res::SCALE_RATIO;
 
 #[derive(Resource, Reflect, Default)]
 pub struct ResActor {
+    /// position in a virtual 2d world which used to calculate collision
     pos: [f32; 2],
     direction: ActorDirection,
     action: ActorAction,
@@ -32,22 +33,23 @@ impl ResActor {
         self.gun = Some(ResGun {
             name: String::from("Budget Revolver"),
             size: [16, 16],
-            offset: [11.0, -2.0],
+            offset: [11.0, 0.0],
             hand_offset: [-4.0, -4.0],
             cursor_angle: 0.0,
         });
         self
     }
-    pub fn update_pos(&mut self, pos: [f32; 2]) {
+    pub fn set_tilemap_pos(&mut self, pos: [f32; 2]) {
         self.pos = pos;
     }
     pub fn get_tilemap_pos(&self) -> [f32; 2] {
         self.pos
     }
     pub fn get_actual_pos(&self) -> Vec3 {
+        let x = self.pos[0] as f32 * SCALE_RATIO;
         let y = self.pos[1] as f32 * SCALE_RATIO;
-        let z = -y;
-        Vec3::new(self.pos[0] as f32 * SCALE_RATIO, y, z)
+        let z = -y + ((28.0 / 2.0) * SCALE_RATIO);
+        Vec3::new(x, y, z)
     }
     pub fn get_cur_hp(&self) -> u8 {
         self.hp

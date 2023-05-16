@@ -109,12 +109,12 @@ fn main() {
     app.run();
 }
 
-pub const CAMERA_FAR: f32 = 10.0;
+pub const CAMERA_FAR: f32 = 100.0;
 
 fn setup_camera(mut c: Commands) {
     c.spawn(Camera3dBundle {
         projection: OrthographicProjection {
-            far: 10000.0,
+            far: 1000.0,
             ..default()
         }
         .into(),
