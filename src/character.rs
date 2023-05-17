@@ -108,21 +108,14 @@ pub fn update_gun_direction(
     mut gun_query: Query<(&mut Transform, &mut Handle<Mesh>, &CopGun), Without<CopHand>>,
     mut hand_query: Query<(&mut Transform, &CopHand), Without<CopGun>>,
 ) {
-    if let Some(gun) = actor.get_cur_gun() {
-        let angle = gun.cursor_angle;
-        // 向下
-        if angle >= -120.0 && angle <= -60.0 {
-            //
-        } else if angle >= -60.0 && angle <= 30.0 {
-            //
-        } else if angle >= 30.0 && angle <= 60.0 {
-            //
-        } else if angle >= 60.0 && angle <= 120.0 {
-            //
-        } else if angle >= 120.0 && angle <= 150.0 {
-            //
-        } else {
-            //
+    for (mut t, _) in hand_query.iter_mut() {
+        match actor.get_gun_hand() {
+            ActorGunHand::Left => {
+                t.translation.x = t.translation.x.abs();
+            }
+            ActorGunHand::Right => {
+                t.translation.x = -t.translation.x.abs();
+            }
         }
     }
     for (mut t, mut mesh, cop_gun) in gun_query.iter_mut() {
@@ -134,16 +127,6 @@ pub fn update_gun_direction(
             ActorGunHand::Right => {
                 t.translation.x = t.translation.x.abs();
                 *mesh = cop_gun.mesh.clone();
-            }
-        }
-    }
-    for (mut t, _) in hand_query.iter_mut() {
-        match actor.get_gun_hand() {
-            ActorGunHand::Left => {
-                t.translation.x = t.translation.x.abs();
-            }
-            ActorGunHand::Right => {
-                t.translation.x = -t.translation.x.abs();
             }
         }
     }

@@ -56,22 +56,63 @@ impl ResActor {
     }
     pub fn update_cursor_angle(&mut self, angle: f32) {
         self.cursor_angle = angle;
-        if angle >= -120.0 && angle <= -60.0 {
-            self.turn_down();
-        } else if angle >= -60.0 && angle <= 30.0 {
-            self.turn_down();
-            self.turn_right();
-        } else if angle >= 30.0 && angle <= 60.0 {
-            self.turn_up();
-            self.turn_right();
-        } else if angle >= 60.0 && angle <= 120.0 {
-            self.turn_up();
-        } else if angle >= 120.0 && angle <= 150.0 {
-            self.turn_up();
-            self.turn_left();
-        } else {
-            self.turn_down();
-            self.turn_left();
+
+        enum CursorDirection {
+            TopSlightlyLeft,
+            TopSlightlyRight,
+            TopLeft,
+            TopRight,
+            Left,
+            Right,
+            BottomSlightlyLeft,
+            BottomSlightlyRight,
+        }
+
+        impl CursorDirection {
+            fn from_angle(angle: f32) -> Self {
+                if angle >= -60.0 && angle < 30.0 {
+                    Self::Right
+                } else if angle >= 30.0 && angle < 60.0 {
+                    Self::TopRight
+                } else if angle >= 60.0 && angle < 90.0 {
+                    Self::TopSlightlyRight
+                } else if angle >= 90.0 && angle < 120.0 {
+                    Self::TopSlightlyLeft
+                } else if angle >= 120.0 && angle < 150.0 {
+                    Self::TopLeft
+                } else if angle >= -90.0 && angle < -60.0 {
+                    Self::BottomSlightlyRight
+                } else if angle >= -120.0 && angle < -90.0 {
+                    Self::BottomSlightlyLeft
+                } else {
+                    Self::Left
+                }
+            }
+        }
+
+        match CursorDirection::from_angle(angle) {
+            CursorDirection::BottomSlightlyLeft | CursorDirection::BottomSlightlyRight => {
+                self.turn_down();
+            }
+            CursorDirection::Right => {
+                self.turn_down();
+                self.turn_right();
+            }
+            CursorDirection::TopRight => {
+                self.turn_up();
+                self.turn_right();
+            }
+            CursorDirection::TopSlightlyLeft | CursorDirection::TopSlightlyRight => {
+                self.turn_up();
+            }
+            CursorDirection::TopLeft => {
+                self.turn_up();
+                self.turn_left();
+            }
+            CursorDirection::Left => {
+                self.turn_down();
+                self.turn_left();
+            }
         }
         if let Some(ref mut gun) = &mut self.gun {
             gun.cursor_angle = angle;
