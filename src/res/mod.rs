@@ -4,7 +4,7 @@ use std::f32::consts::SQRT_2;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
-pub use actor::{ActorAction, ActorDirection, ResActor, ResGun};
+pub use actor::{ActorAction, ActorDirection, ActorGunHand, ResActor, ResGun};
 pub use cache::{ActorAssets, Cache};
 use world_generator::LevelModel;
 

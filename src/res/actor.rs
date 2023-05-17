@@ -6,13 +6,13 @@ use crate::res::SCALE_RATIO;
 pub struct ResActor {
     /// position in a virtual 2d world which used to calculate collision
     pos: [f32; 2],
-    direction: ActorDirection,
     action: ActorAction,
+    cursor_angle: f32,
+    direction: ActorDirection,
+    gun_hand: ActorGunHand,
     move_speed: f32,
     hp_full: u8,
     hp: u8,
-    // only for debug inspect
-    cursor_angle: f32,
     #[reflect(ignore)]
     gun: Option<ResGun>,
 }
@@ -54,9 +54,25 @@ impl ResActor {
     pub fn get_cur_hp(&self) -> u8 {
         self.hp
     }
-    // only for debug inspect
-    pub fn update_angle(&mut self, angle: f32) {
+    pub fn update_cursor_angle(&mut self, angle: f32) {
         self.cursor_angle = angle;
+        if angle >= -120.0 && angle <= -60.0 {
+            self.turn_down();
+        } else if angle >= -60.0 && angle <= 30.0 {
+            self.turn_down();
+            self.turn_right();
+        } else if angle >= 30.0 && angle <= 60.0 {
+            self.turn_up();
+            self.turn_right();
+        } else if angle >= 60.0 && angle <= 120.0 {
+            self.turn_up();
+        } else if angle >= 120.0 && angle <= 150.0 {
+            self.turn_up();
+            self.turn_left();
+        } else {
+            self.turn_down();
+            self.turn_left();
+        }
         if let Some(ref mut gun) = &mut self.gun {
             gun.cursor_angle = angle;
         }
@@ -70,6 +86,9 @@ impl ResActor {
     pub fn get_direction(&self) -> ActorDirection {
         self.direction
     }
+    pub fn get_gun_hand(&self) -> ActorGunHand {
+        self.gun_hand
+    }
     pub fn get_cur_gun(&self) -> &Option<ResGun> {
         &self.gun
     }
@@ -79,13 +98,13 @@ impl ResActor {
     pub fn active_walking(&mut self) {
         self.action = ActorAction::Walking
     }
-    pub fn turn_up(&mut self) {
+    fn turn_up(&mut self) {
         self.direction = ActorDirection::Up
     }
-    pub fn turn_down(&mut self) {
+    fn turn_down(&mut self) {
         self.direction = ActorDirection::Down
     }
-    pub fn turn_left(&mut self) {
+    fn turn_left(&mut self) {
         match self.direction {
             ActorDirection::Up | ActorDirection::UpRight | ActorDirection::UpLeft => {
                 self.direction = ActorDirection::UpLeft
@@ -94,8 +113,9 @@ impl ResActor {
                 self.direction = ActorDirection::DownLeft
             }
         }
+        self.gun_hand = ActorGunHand::Left;
     }
-    pub fn turn_right(&mut self) {
+    fn turn_right(&mut self) {
         match self.direction {
             ActorDirection::Up | ActorDirection::UpRight | ActorDirection::UpLeft => {
                 self.direction = ActorDirection::UpRight
@@ -104,6 +124,7 @@ impl ResActor {
                 self.direction = ActorDirection::DownRight
             }
         }
+        self.gun_hand = ActorGunHand::Right;
     }
 }
 
@@ -123,6 +144,13 @@ pub enum ActorDirection {
     Up,
     UpLeft,
     UpRight,
+}
+
+#[derive(PartialEq, Reflect, Default, Copy, Clone)]
+pub enum ActorGunHand {
+    #[default]
+    Left,
+    Right,
 }
 
 pub struct ResGun {

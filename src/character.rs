@@ -6,7 +6,9 @@ use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
 use crate::cursor::ResCursor;
-use crate::res::{ActorAction, ActorDirection, Cache, ResActor, GRID_SIZE, SCALE_RATIO};
+use crate::res::{
+    ActorAction, ActorDirection, ActorGunHand, Cache, ResActor, GRID_SIZE, SCALE_RATIO,
+};
 use crate::sprite_animation::{ActorMaterialSprite, ActorSpriteAnimation};
 
 pub enum ActorTag {
@@ -124,23 +126,23 @@ pub fn update_gun_direction(
         }
     }
     for (mut t, mut mesh, cop_gun) in gun_query.iter_mut() {
-        match actor.get_direction() {
-            ActorDirection::DownLeft | ActorDirection::UpLeft => {
+        match actor.get_gun_hand() {
+            ActorGunHand::Left => {
                 t.translation.x = -t.translation.x.abs();
                 *mesh = cop_gun.mesh_flip.clone();
             }
-            _ => {
+            ActorGunHand::Right => {
                 t.translation.x = t.translation.x.abs();
                 *mesh = cop_gun.mesh.clone();
             }
         }
     }
     for (mut t, _) in hand_query.iter_mut() {
-        match actor.get_direction() {
-            ActorDirection::DownLeft | ActorDirection::UpLeft => {
+        match actor.get_gun_hand() {
+            ActorGunHand::Left => {
                 t.translation.x = t.translation.x.abs();
             }
-            _ => {
+            ActorGunHand::Right => {
                 t.translation.x = -t.translation.x.abs();
             }
         }
@@ -156,6 +158,10 @@ pub fn update_character_sprite(
             ActorAction::Idle => match actor.get_direction() {
                 ActorDirection::Down => {
                     anima.update(ActorTag::IdleF1h.tag());
+                    match actor.get_gun_hand() {
+                        ActorGunHand::Left => sprite.flip_x = true,
+                        ActorGunHand::Right => sprite.flip_x = false,
+                    }
                 }
                 ActorDirection::DownLeft => {
                     anima.update(ActorTag::IdleFs1h.tag());
@@ -167,6 +173,10 @@ pub fn update_character_sprite(
                 }
                 ActorDirection::Up => {
                     anima.update(ActorTag::IdleB1h.tag());
+                    match actor.get_gun_hand() {
+                        ActorGunHand::Left => sprite.flip_x = true,
+                        ActorGunHand::Right => sprite.flip_x = false,
+                    }
                 }
                 ActorDirection::UpLeft => {
                     anima.update(ActorTag::IdleBs0h.tag());
@@ -180,6 +190,10 @@ pub fn update_character_sprite(
             ActorAction::Walking => match actor.get_direction() {
                 ActorDirection::Down => {
                     anima.update(ActorTag::WalkF1h.tag());
+                    match actor.get_gun_hand() {
+                        ActorGunHand::Left => sprite.flip_x = true,
+                        ActorGunHand::Right => sprite.flip_x = false,
+                    }
                 }
                 ActorDirection::DownLeft => {
                     anima.update(ActorTag::WalkFs1h.tag());
@@ -191,6 +205,10 @@ pub fn update_character_sprite(
                 }
                 ActorDirection::Up => {
                     anima.update(ActorTag::WalkB1h.tag());
+                    match actor.get_gun_hand() {
+                        ActorGunHand::Left => sprite.flip_x = true,
+                        ActorGunHand::Right => sprite.flip_x = false,
+                    }
                 }
                 ActorDirection::UpLeft => {
                     anima.update(ActorTag::WalkBs0h.tag());
@@ -446,30 +464,14 @@ pub fn character_move(
     }
 
     // 判断actor当前朝向
-    let cursor_pos = cursor.get_tilemap_pos();
-    let actor_pos = actor.get_tilemap_pos();
-    let radians = Vec2::X.angle_between(
-        Vec2::new(cursor_pos[0], cursor_pos[1]) - Vec2::new(actor_pos[0], actor_pos[1]),
-    );
-    let angle = (radians * 180.0 / PI).round();
-    // only for debug inspect
-    actor.update_angle(angle);
-    if angle >= -120.0 && angle <= -60.0 {
-        actor.turn_down();
-    } else if angle >= -60.0 && angle <= 30.0 {
-        actor.turn_down();
-        actor.turn_right();
-    } else if angle >= 30.0 && angle <= 60.0 {
-        actor.turn_up();
-        actor.turn_right();
-    } else if angle >= 60.0 && angle <= 120.0 {
-        actor.turn_up();
-    } else if angle >= 120.0 && angle <= 150.0 {
-        actor.turn_up();
-        actor.turn_left();
-    } else {
-        actor.turn_down();
-        actor.turn_left();
+    {
+        let cursor_pos = cursor.get_tilemap_pos();
+        let actor_pos = actor.get_tilemap_pos();
+        let radians = Vec2::X.angle_between(
+            Vec2::new(cursor_pos[0], cursor_pos[1]) - Vec2::new(actor_pos[0], actor_pos[1]),
+        );
+        let angle = (radians * 180.0 / PI).round();
+        actor.update_cursor_angle(angle);
     }
 }
 
