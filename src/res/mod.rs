@@ -213,7 +213,7 @@ pub fn reset_res(
         base_color_texture: Some(cache.char_hand_image.clone()),
         alpha_mode: AlphaMode::Blend,
         unlit: true,
-        depth_bias: 30.0,
+        depth_bias: 5.0,
         ..default()
     });
 
@@ -226,7 +226,7 @@ pub fn reset_res(
             2,
             &mut images,
             &mut materials,
-            20.0,
+            0.0,
         );
         cache
             .gun_images

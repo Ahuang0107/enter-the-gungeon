@@ -61,16 +61,14 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
         if let Some(actor_gun) = actor.get_cur_gun() {
             let name = actor_gun.name.clone();
             let size = actor_gun.size;
-            let offset = actor_gun.offset;
-            let hand_offset = actor_gun.hand_offset;
+
             p.spawn(PbrBundle {
                 mesh: cache.get_gun_mesh((size[0], size[1]), false).clone(),
                 material: cache.get_gun_material(&name, 0).clone(),
-                transform: Transform::from_xyz(
-                    offset[0] * SCALE_RATIO,
-                    offset[1] * SCALE_RATIO,
-                    0.0,
-                ),
+                transform: Transform {
+                    translation: actor_gun.get_gun_offset(),
+                    ..default()
+                },
                 ..default()
             })
             .insert(CopGun {
@@ -78,22 +76,20 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
                 mesh_flip: cache.get_gun_mesh((size[0], size[1]), true).clone(),
             })
             .insert(NotShadowCaster::default())
-            .insert(Name::new(name))
-            .with_children(|p| {
-                p.spawn(PbrBundle {
-                    mesh: cache.char_hand_mesh.clone(),
-                    material: cache.char_hand_material.clone(),
-                    transform: Transform::from_xyz(
-                        hand_offset[0] * SCALE_RATIO,
-                        hand_offset[1] * SCALE_RATIO,
-                        0.0,
-                    ),
+            .insert(Name::new(name));
+
+            p.spawn(PbrBundle {
+                mesh: cache.char_hand_mesh.clone(),
+                material: cache.char_hand_material.clone(),
+                transform: Transform {
+                    translation: actor_gun.get_hand_offset(),
                     ..default()
-                })
-                .insert(CopHand)
-                .insert(NotShadowCaster::default())
-                .insert(Name::new("Hand"));
-            });
+                },
+                ..default()
+            })
+            .insert(CopHand)
+            .insert(NotShadowCaster::default())
+            .insert(Name::new("Hand"));
         }
     })
     .insert(ActorMaterialSprite::default())
@@ -108,25 +104,27 @@ pub fn update_gun_direction(
     mut gun_query: Query<(&mut Transform, &mut Handle<Mesh>, &CopGun), Without<CopHand>>,
     mut hand_query: Query<(&mut Transform, &CopHand), Without<CopGun>>,
 ) {
-    for (mut t, _) in hand_query.iter_mut() {
-        match actor.get_gun_hand() {
-            ActorGunHand::Left => {
-                t.translation.x = t.translation.x.abs();
-            }
-            ActorGunHand::Right => {
-                t.translation.x = -t.translation.x.abs();
+    if let Some(actor_gun) = actor.get_cur_gun() {
+        for (mut t, mut mesh, cop_gun) in gun_query.iter_mut() {
+            match actor.get_gun_hand() {
+                ActorGunHand::Left => {
+                    t.translation = actor_gun.get_gun_offset_flip();
+                    *mesh = cop_gun.mesh_flip.clone();
+                }
+                ActorGunHand::Right => {
+                    t.translation = actor_gun.get_gun_offset();
+                    *mesh = cop_gun.mesh.clone();
+                }
             }
         }
-    }
-    for (mut t, mut mesh, cop_gun) in gun_query.iter_mut() {
-        match actor.get_gun_hand() {
-            ActorGunHand::Left => {
-                t.translation.x = -t.translation.x.abs();
-                *mesh = cop_gun.mesh_flip.clone();
-            }
-            ActorGunHand::Right => {
-                t.translation.x = t.translation.x.abs();
-                *mesh = cop_gun.mesh.clone();
+        for (mut t, _) in hand_query.iter_mut() {
+            match actor.get_gun_hand() {
+                ActorGunHand::Left => {
+                    t.translation = actor_gun.get_hand_offset_flip();
+                }
+                ActorGunHand::Right => {
+                    t.translation = actor_gun.get_hand_offset();
+                }
             }
         }
     }
