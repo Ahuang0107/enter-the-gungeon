@@ -250,6 +250,31 @@ pub fn reset_res(
         );
     }
 
+    // 加载bullet相关贴图资源
+    {
+        let bullet_image = server.load("art/gun/Budget Revolver Bullet.png");
+        cache
+            .bullet_images
+            .insert(String::from("Budget Revolver"), bullet_image.clone());
+        cache.bullet_materials.insert(
+            String::from("Budget Revolver"),
+            materials.add(StandardMaterial {
+                base_color_texture: Some(bullet_image.clone()),
+                alpha_mode: AlphaMode::Blend,
+                unlit: true,
+                depth_bias: 15.0,
+                ..default()
+            }),
+        );
+        cache.bullet_meshes.insert(
+            (5, 5),
+            meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+                5.0 * SCALE_RATIO,
+                5.0 * SCALE_RATIO,
+            )))),
+        );
+    }
+
     {
         for (index, image) in
             utils::split_images("assets/art/ui/heart.png", Vec2::new(16.0, 16.0), 2, 2)

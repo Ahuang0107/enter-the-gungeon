@@ -26,6 +26,10 @@ pub struct Cache {
     pub gun_materials: HashMap<String, HashMap<u8, Handle<StandardMaterial>>>,
     pub gun_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     pub gun_meshes_flip: HashMap<(u32, u32), Handle<Mesh>>,
+    // bullet相关的material和mesh
+    pub bullet_images: HashMap<String, Handle<Image>>,
+    pub bullet_materials: HashMap<String, Handle<StandardMaterial>>,
+    pub bullet_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     // TODO need to des
     pub old_meshes: HashMap<String, Handle<Mesh>>,
     pub ui_hp_images: HashMap<u8, Handle<Image>>,
@@ -59,6 +63,12 @@ impl Cache {
     }
     pub fn get_gun_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.gun_materials.get(tag).unwrap().get(&index).unwrap()
+    }
+    pub fn get_bullet_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
+        self.bullet_meshes.get(&key).unwrap()
+    }
+    pub fn get_bullet_material(&self, tag: &str) -> &Handle<StandardMaterial> {
+        self.bullet_materials.get(tag).unwrap()
     }
     pub fn get_hp_image(&self, index: u8) -> &Handle<Image> {
         self.ui_hp_images.get(&index).unwrap()

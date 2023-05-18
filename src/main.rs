@@ -6,6 +6,7 @@ use bevy_kira_audio::prelude::*;
 use bevy_task_queue::TaskQueue;
 use res::{Cache, ResActor};
 
+mod bullet;
 mod character;
 mod cursor;
 mod debug;
@@ -102,6 +103,8 @@ fn main() {
             res::update_actor,
             ui::cursor::update,
             ui::hp::update,
+            bullet::fire_bullet,
+            bullet::bullet_move,
         )
             .in_set(OnUpdate(AppState::InGame)),
     );

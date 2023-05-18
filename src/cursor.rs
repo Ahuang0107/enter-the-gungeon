@@ -11,6 +11,9 @@ pub struct ResCursor {
 }
 
 impl ResCursor {
+    pub fn get_world_pos(&self) -> Vec3 {
+        self.world_pos
+    }
     pub fn get_tilemap_pos(&self) -> [f32; 2] {
         [
             self.world_pos.x / SCALE_RATIO,
