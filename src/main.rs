@@ -1,3 +1,5 @@
+use bevy::core_pipeline::bloom::BloomSettings;
+use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::log::LogPlugin;
 use bevy::prelude::*;
 use bevy::window::PresentMode;
@@ -115,14 +117,21 @@ fn main() {
 pub const CAMERA_FAR: f32 = 30.0;
 
 fn setup_camera(mut c: Commands) {
-    c.spawn(Camera3dBundle {
-        projection: OrthographicProjection {
-            far: 1500.0,
+    c.spawn((
+        Camera3dBundle {
+            projection: OrthographicProjection {
+                far: 1500.0,
+                ..default()
+            }
+            .into(),
+            camera: Camera {
+                hdr: true,
+                ..default()
+            },
+            tonemapping: Tonemapping::TonyMcMapface,
+            transform: Transform::from_xyz(0.0, 0.0, CAMERA_FAR).with_scale(Vec3::splat(0.04)),
             ..default()
-        }
-        .into(),
-        // TODO 还不确定镜头的合适参数
-        transform: Transform::from_xyz(0.0, 0.0, CAMERA_FAR).with_scale(Vec3::splat(0.04)),
-        ..default()
-    });
+        },
+        BloomSettings::default(),
+    ));
 }
