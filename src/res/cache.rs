@@ -33,6 +33,8 @@ pub struct Cache {
     // TODO need to des
     pub old_meshes: HashMap<String, Handle<Mesh>>,
     pub ui_hp_images: HashMap<u8, Handle<Image>>,
+    pub light_debug_mesh: Handle<Mesh>,
+    pub light_debug_material: Handle<StandardMaterial>,
 }
 
 impl Cache {

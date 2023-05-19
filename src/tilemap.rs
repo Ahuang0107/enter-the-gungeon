@@ -115,7 +115,14 @@ pub fn setup(mut c: Commands, cache: Res<Cache>) {
                     .with_children(|p| {
                         for light in room.lights.iter() {
                             p.spawn(utils::point_light(light.pos, light.color))
-                                .insert(Name::new("Light"));
+                                .insert(Name::new("Light"))
+                                .with_children(|p| {
+                                    p.spawn(PbrBundle {
+                                        mesh: cache.light_debug_mesh.clone(),
+                                        material: cache.light_debug_material.clone(),
+                                        ..default()
+                                    });
+                                });
                         }
                     })
                     .insert(Name::new("Lights"));

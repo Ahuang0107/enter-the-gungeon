@@ -282,6 +282,16 @@ pub fn reset_res(
             cache.ui_hp_images.insert(index, images.add(image));
         }
     }
+
+    {
+        cache.light_debug_mesh = meshes.add(Mesh::from(shape::Cube::new(0.5)));
+        cache.light_debug_material = materials.add(StandardMaterial {
+            base_color: Color::WHITE,
+            unlit: true,
+            depth_bias: 20.0,
+            ..default()
+        });
+    }
 }
 
 pub fn update_actor(
