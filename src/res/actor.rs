@@ -36,6 +36,7 @@ impl ResActor {
             offset: [11.0, -1.0],
             hand_offset: [-4.0, -3.0],
             cursor_angle: 0.0,
+            fire_offset: [7.0, 2.0],
         });
         self
     }
@@ -167,6 +168,24 @@ impl ResActor {
         }
         self.gun_hand = ActorGunHand::Right;
     }
+    pub fn get_gun_fire_offset(&self) -> Option<Vec3> {
+        if let Some(gun) = &self.gun {
+            match self.gun_hand {
+                ActorGunHand::Left => Some(Vec3::new(
+                    -gun.fire_offset[0] * SCALE_RATIO,
+                    gun.fire_offset[1] * SCALE_RATIO,
+                    0.0,
+                )),
+                ActorGunHand::Right => Some(Vec3::new(
+                    gun.fire_offset[0] * SCALE_RATIO,
+                    gun.fire_offset[1] * SCALE_RATIO,
+                    0.0,
+                )),
+            }
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(PartialEq, Reflect, Default, Copy, Clone)]
@@ -202,35 +221,23 @@ pub struct ResGun {
     /// 手的位置相对枪械的偏移，也就是手握在枪械哪里的信息
     hand_offset: [f32; 2],
     pub cursor_angle: f32,
+    /// 发射bullet的位置相对枪械的偏移
+    fire_offset: [f32; 2],
 }
 
 impl ResGun {
-    pub fn get_gun_offset(&self) -> Vec3 {
+    pub fn get_gun_offset(&self, flip: bool) -> Vec3 {
         Vec3::new(
-            self.offset[0] * SCALE_RATIO,
+            if flip { -1.0 } else { 1.0 } * self.offset[0] * SCALE_RATIO,
             self.offset[1] * SCALE_RATIO,
             0.0,
         )
     }
-    pub fn get_gun_offset_flip(&self) -> Vec3 {
+    pub fn get_hand_offset(&self, flip: bool) -> Vec3 {
         Vec3::new(
-            -self.offset[0] * SCALE_RATIO,
-            self.offset[1] * SCALE_RATIO,
-            0.0,
-        )
-    }
-    pub fn get_hand_offset(&self) -> Vec3 {
-        Vec3::new(
-            self.hand_offset[0] * SCALE_RATIO,
+            if flip { -1.0 } else { 1.0 } * self.hand_offset[0] * SCALE_RATIO,
             self.hand_offset[1] * SCALE_RATIO,
             0.0,
-        ) + self.get_gun_offset()
-    }
-    pub fn get_hand_offset_flip(&self) -> Vec3 {
-        Vec3::new(
-            -self.hand_offset[0] * SCALE_RATIO,
-            self.hand_offset[1] * SCALE_RATIO,
-            0.0,
-        ) + self.get_gun_offset_flip()
+        ) + self.get_gun_offset(flip)
     }
 }

@@ -21,25 +21,32 @@ pub fn fire_bullet(
     guns: Query<&GlobalTransform, With<CopGun>>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
-        let gun = guns.get_single().unwrap();
-        let gun_pos = gun.translation();
-        let actor_pos = actor.get_actual_pos();
-        let cursor_pos = cursor.get_world_pos();
-        c.spawn(PbrBundle {
-            mesh: cache.get_bullet_mesh((5, 5)).clone(),
-            material: cache.get_bullet_material("Budget Revolver").clone(),
-            transform: Transform {
-                translation: gun_pos,
+        if let Some(fire_offset) = actor.get_gun_fire_offset() {
+            let gun = guns.get_single().unwrap();
+            let gun_pos = gun.translation();
+
+            let velocity = {
+                let actor_pos = actor.get_actual_pos();
+                let cursor_pos = cursor.get_world_pos();
+                (cursor_pos - actor_pos).truncate().normalize()
+            };
+
+            c.spawn(PbrBundle {
+                mesh: cache.get_bullet_mesh((5, 5)).clone(),
+                material: cache.get_bullet_material("Budget Revolver").clone(),
+                transform: Transform {
+                    translation: gun_pos + fire_offset,
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
-        })
-        .insert(Bullet {
-            origin: gun_pos.truncate(),
-            velocity: (cursor_pos - actor_pos).truncate().normalize(),
-            speed: 30.0,
-            max_distance: 30.0,
-        });
+            })
+            .insert(Bullet {
+                origin: gun_pos.truncate(),
+                velocity,
+                speed: 30.0,
+                max_distance: 30.0,
+            });
+        }
     }
 }
 

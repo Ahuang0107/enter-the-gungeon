@@ -66,7 +66,7 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
                 mesh: cache.get_gun_mesh((size[0], size[1]), false).clone(),
                 material: cache.get_gun_material(&name, 0).clone(),
                 transform: Transform {
-                    translation: actor_gun.get_gun_offset(),
+                    translation: actor_gun.get_gun_offset(false),
                     ..default()
                 },
                 ..default()
@@ -82,7 +82,7 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
                 mesh: cache.char_hand_mesh.clone(),
                 material: cache.char_hand_material.clone(),
                 transform: Transform {
-                    translation: actor_gun.get_hand_offset(),
+                    translation: actor_gun.get_hand_offset(false),
                     ..default()
                 },
                 ..default()
@@ -108,11 +108,11 @@ pub fn update_gun_direction(
         for (mut t, mut mesh, cop_gun) in gun_query.iter_mut() {
             match actor.get_gun_hand() {
                 ActorGunHand::Left => {
-                    t.translation = actor_gun.get_gun_offset_flip();
+                    t.translation = actor_gun.get_gun_offset(true);
                     *mesh = cop_gun.mesh_flip.clone();
                 }
                 ActorGunHand::Right => {
-                    t.translation = actor_gun.get_gun_offset();
+                    t.translation = actor_gun.get_gun_offset(false);
                     *mesh = cop_gun.mesh.clone();
                 }
             }
@@ -120,10 +120,10 @@ pub fn update_gun_direction(
         for (mut t, _) in hand_query.iter_mut() {
             match actor.get_gun_hand() {
                 ActorGunHand::Left => {
-                    t.translation = actor_gun.get_hand_offset_flip();
+                    t.translation = actor_gun.get_hand_offset(true);
                 }
                 ActorGunHand::Right => {
-                    t.translation = actor_gun.get_hand_offset();
+                    t.translation = actor_gun.get_hand_offset(false);
                 }
             }
         }
