@@ -108,11 +108,21 @@ pub fn update_gun_direction(
         for (mut t, mut mesh, cop_gun) in gun_query.iter_mut() {
             match actor.get_gun_hand() {
                 ActorGunHand::Left => {
+                    *t = Transform::default();
                     t.translation = actor_gun.get_gun_offset(true);
+                    t.rotate_around(
+                        actor_gun.get_hand_offset(true),
+                        actor_gun.get_rotation(true),
+                    );
                     *mesh = cop_gun.mesh_flip.clone();
                 }
                 ActorGunHand::Right => {
+                    *t = Transform::default();
                     t.translation = actor_gun.get_gun_offset(false);
+                    t.rotate_around(
+                        actor_gun.get_hand_offset(false),
+                        actor_gun.get_rotation(false),
+                    );
                     *mesh = cop_gun.mesh.clone();
                 }
             }

@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use bevy::prelude::*;
 
 use crate::res::SCALE_RATIO;
@@ -47,13 +49,22 @@ impl ResActor {
         self.pos
     }
     pub fn get_actual_pos(&self) -> Vec3 {
+        // 为了让actor和包含的gun等元素保持在tilemap之上
+        let actor_above_offset = 10.0;
         let x = self.pos[0] as f32 * SCALE_RATIO;
         let y = self.pos[1] as f32 * SCALE_RATIO;
-        let z = -y + ((28.0 / 2.0) * SCALE_RATIO);
+        let z = -y + (((28.0 / 2.0) + actor_above_offset) * SCALE_RATIO);
         Vec3::new(x, y, z)
     }
     pub fn get_cur_hp(&self) -> u8 {
         self.hp
+    }
+    /// gun需要旋转的角度
+    fn get_gun_radians(&self) -> f32 {
+        match self.get_gun_hand() {
+            ActorGunHand::Left => PI * (self.cursor_angle - 180.0) / 180.0,
+            ActorGunHand::Right => PI * self.cursor_angle / 180.0,
+        }
     }
     pub fn update_cursor_angle(&mut self, angle: f32) {
         self.cursor_angle = angle;
@@ -131,8 +142,12 @@ impl ResActor {
     pub fn get_gun_hand(&self) -> ActorGunHand {
         self.gun_hand
     }
-    pub fn get_cur_gun(&self) -> &Option<ResGun> {
-        &self.gun
+    pub fn get_cur_gun(&self) -> Option<&ResGun> {
+        if let Some(gun) = &self.gun {
+            Some(gun)
+        } else {
+            None
+        }
     }
     pub fn active_idle(&mut self) {
         self.action = ActorAction::Idle
@@ -168,20 +183,18 @@ impl ResActor {
         }
         self.gun_hand = ActorGunHand::Right;
     }
-    pub fn get_gun_fire_offset(&self) -> Option<Vec3> {
+    pub fn get_fire_offset(&self) -> Option<Vec3> {
         if let Some(gun) = &self.gun {
-            match self.gun_hand {
-                ActorGunHand::Left => Some(Vec3::new(
-                    -gun.fire_offset[0] * SCALE_RATIO,
-                    gun.fire_offset[1] * SCALE_RATIO,
-                    0.0,
-                )),
-                ActorGunHand::Right => Some(Vec3::new(
-                    gun.fire_offset[0] * SCALE_RATIO,
-                    gun.fire_offset[1] * SCALE_RATIO,
-                    0.0,
-                )),
-            }
+            // 这里得到的所有offset都是相对于actor的
+            let (hand_offset, fire_offset) = match self.get_gun_hand() {
+                ActorGunHand::Left => (gun.get_hand_offset(true), gun.get_fire_offset(true)),
+                ActorGunHand::Right => (gun.get_hand_offset(false), gun.get_fire_offset(false)),
+            };
+            let gun_radians = self.get_gun_radians();
+            let relative_offset = (fire_offset - hand_offset)
+                .truncate()
+                .rotate(Vec2::from_angle(gun_radians));
+            Some(relative_offset.extend(0.0) + hand_offset)
         } else {
             None
         }
@@ -220,12 +233,14 @@ pub struct ResGun {
     offset: [f32; 2],
     /// 手的位置相对枪械的偏移，也就是手握在枪械哪里的信息
     hand_offset: [f32; 2],
-    pub cursor_angle: f32,
+    cursor_angle: f32,
     /// 发射bullet的位置相对枪械的偏移
     fire_offset: [f32; 2],
 }
 
 impl ResGun {
+    /// gun相对actor的位移
+    /// 用来直接设置gun的位置
     pub fn get_gun_offset(&self, flip: bool) -> Vec3 {
         Vec3::new(
             if flip { -1.0 } else { 1.0 } * self.offset[0] * SCALE_RATIO,
@@ -233,11 +248,34 @@ impl ResGun {
             0.0,
         )
     }
+    /// hand相对actor的位移
+    /// 用来直接设置hand的位置
     pub fn get_hand_offset(&self, flip: bool) -> Vec3 {
         Vec3::new(
             if flip { -1.0 } else { 1.0 } * self.hand_offset[0] * SCALE_RATIO,
             self.hand_offset[1] * SCALE_RATIO,
             0.0,
         ) + self.get_gun_offset(flip)
+    }
+    /// fire相对actor的位移
+    pub fn get_fire_offset(&self, flip: bool) -> Vec3 {
+        Vec3::new(
+            if flip { -1.0 } else { 1.0 } * self.fire_offset[0] * SCALE_RATIO,
+            self.fire_offset[1] * SCALE_RATIO,
+            0.0,
+        ) + self.get_gun_offset(flip)
+    }
+    /// gun跟随cursor需要的旋转
+    /// 用来对gun做瞄准方向的旋转
+    pub fn get_rotation(&self, flip: bool) -> Quat {
+        if self.cursor_angle == 0.0 || self.cursor_angle == 180.0 {
+            Quat::default()
+        } else {
+            if flip {
+                Quat::from_rotation_z(PI / (180.0 / (180.0 + self.cursor_angle)))
+            } else {
+                Quat::from_rotation_z(PI / (180.0 / self.cursor_angle))
+            }
+        }
     }
 }

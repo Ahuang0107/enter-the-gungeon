@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use crate::character::CopGun;
 use crate::cursor::ResCursor;
 use crate::res::{Cache, ResActor};
 
@@ -18,15 +17,12 @@ pub fn fire_bullet(
     cache: Res<Cache>,
     cursor: Res<ResCursor>,
     actor: Res<ResActor>,
-    guns: Query<&GlobalTransform, With<CopGun>>,
 ) {
     if buttons.just_pressed(MouseButton::Left) {
-        if let Some(fire_offset) = actor.get_gun_fire_offset() {
-            let gun = guns.get_single().unwrap();
-            let gun_pos = gun.translation();
+        if let Some(fire_offset) = actor.get_fire_offset() {
+            let actor_pos = actor.get_actual_pos();
 
             let velocity = {
-                let actor_pos = actor.get_actual_pos();
                 let cursor_pos = cursor.get_world_pos();
                 (cursor_pos - actor_pos).truncate().normalize()
             };
@@ -35,13 +31,13 @@ pub fn fire_bullet(
                 mesh: cache.get_bullet_mesh((5, 5)).clone(),
                 material: cache.get_bullet_material("Budget Revolver").clone(),
                 transform: Transform {
-                    translation: gun_pos + fire_offset,
+                    translation: actor_pos + fire_offset,
                     ..default()
                 },
                 ..default()
             })
             .insert(Bullet {
-                origin: gun_pos.truncate(),
+                origin: (actor_pos + fire_offset).truncate(),
                 velocity,
                 speed: 30.0,
                 max_distance: 30.0,
