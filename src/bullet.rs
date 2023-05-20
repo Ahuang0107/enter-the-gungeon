@@ -1,3 +1,4 @@
+use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 
 use crate::cursor::ResCursor;
@@ -36,6 +37,7 @@ pub fn fire_bullet(
                 },
                 ..default()
             })
+            .insert(NotShadowCaster::default())
             .insert(Bullet {
                 origin: (actor_pos + fire_offset).truncate(),
                 velocity,
