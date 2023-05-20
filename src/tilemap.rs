@@ -84,7 +84,12 @@ pub fn setup(mut c: Commands, cache: Res<Cache>) {
 
                     // 添加天花板
                     p.spawn(SpatialBundle {
-                        transform: Transform::from_xyz(0.0, 0.0, GRID_SIZE * 2.0 * SCALE_RATIO),
+                        transform: Transform::from_xyz(
+                            0.0,
+                            0.0,
+                            // move roof more top to make sure actor and bullet will under roof
+                            (GRID_SIZE + 20.0) * 2.0 * SCALE_RATIO,
+                        ),
                         ..default()
                     })
                     .with_children(|p| {
