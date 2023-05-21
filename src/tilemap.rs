@@ -58,29 +58,32 @@ pub fn setup(mut c: Commands, cache: Res<Cache>) {
                     .insert(Name::new("Walls"));
 
                     // 添加地板
-                    p.spawn(SpatialBundle::default())
-                        .with_children(|p| {
-                            for tile_group in room.floors.iter() {
-                                let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
-                                for (grid_x, col) in tile_group.tiles.iter() {
-                                    for (grid_y, index) in col.iter() {
-                                        let tile_info = tileset.tiles.get(index).unwrap();
-                                        let width = tile_info.1[0] as u32;
-                                        let height = tile_info.1[1] as u32;
-                                        p.spawn(utils::tile_floor_sprite(
-                                            cache.get_tile_mesh_sqrt2((width, height)),
-                                            cache.get_tile_material(
-                                                &tile_group.tileset_uuid,
-                                                *index,
-                                            ),
-                                            [*grid_x as i32, *grid_y as i32],
-                                        ))
-                                        .insert(Name::new("Floor"));
-                                    }
+                    p.spawn(SpatialBundle {
+                        transform: Transform {
+                            translation: Vec3::new(0.0, 0.0, -10.0 * SCALE_RATIO),
+                            ..default()
+                        },
+                        ..default()
+                    })
+                    .with_children(|p| {
+                        for tile_group in room.floors.iter() {
+                            let tileset = tilesets.get(&tile_group.tileset_uuid).unwrap();
+                            for (grid_x, col) in tile_group.tiles.iter() {
+                                for (grid_y, index) in col.iter() {
+                                    let tile_info = tileset.tiles.get(index).unwrap();
+                                    let width = tile_info.1[0] as u32;
+                                    let height = tile_info.1[1] as u32;
+                                    p.spawn(utils::tile_floor_sprite(
+                                        cache.get_tile_mesh_sqrt2((width, height)),
+                                        cache.get_tile_material(&tile_group.tileset_uuid, *index),
+                                        [*grid_x as i32, *grid_y as i32],
+                                    ))
+                                    .insert(Name::new("Floor"));
                                 }
                             }
-                        })
-                        .insert(Name::new("Floors"));
+                        }
+                    })
+                    .insert(Name::new("Floors"));
 
                     // 添加天花板
                     p.spawn(SpatialBundle {

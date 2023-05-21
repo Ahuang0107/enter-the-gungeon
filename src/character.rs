@@ -10,6 +10,7 @@ use crate::res::{
     ActorAction, ActorDirection, ActorGunHand, Cache, ResActor, GRID_SIZE, SCALE_RATIO,
 };
 use crate::sprite_animation::{ActorMaterialSprite, ActorSpriteAnimation};
+use crate::utils::{MoveDirection, MoveDirectionX, MoveDirectionY};
 
 pub enum ActorTag {
     IdleF1h,
@@ -221,89 +222,6 @@ pub fn character_move(
     cache: Res<Cache>,
     cursor: Res<ResCursor>,
 ) {
-    #[derive(Default, Debug, Copy, Clone)]
-    pub struct MoveDirection {
-        x: MoveDirectionX,
-        y: MoveDirectionY,
-    }
-
-    #[derive(Default, Debug, Copy, Clone)]
-    enum MoveDirectionX {
-        Left,
-        Right,
-        #[default]
-        None,
-    }
-
-    #[derive(Default, Debug, Copy, Clone)]
-    enum MoveDirectionY {
-        Up,
-        Down,
-        #[default]
-        None,
-    }
-
-    impl MoveDirection {
-        pub fn detect_key(&mut self, keyboard: &Input<KeyCode>) {
-            if keyboard.pressed(KeyCode::W) {
-                self.up()
-            }
-            if keyboard.pressed(KeyCode::S) {
-                self.down()
-            }
-            if keyboard.pressed(KeyCode::A) {
-                self.left()
-            }
-            if keyboard.pressed(KeyCode::D) {
-                self.right()
-            }
-        }
-        fn up(&mut self) {
-            match self.y {
-                MoveDirectionY::None => {
-                    self.y = MoveDirectionY::Up;
-                }
-                MoveDirectionY::Down => {
-                    self.y = MoveDirectionY::None;
-                }
-                _ => {}
-            }
-        }
-        fn down(&mut self) {
-            match self.y {
-                MoveDirectionY::None => {
-                    self.y = MoveDirectionY::Down;
-                }
-                MoveDirectionY::Up => {
-                    self.y = MoveDirectionY::None;
-                }
-                _ => {}
-            }
-        }
-        fn left(&mut self) {
-            match self.x {
-                MoveDirectionX::None => {
-                    self.x = MoveDirectionX::Left;
-                }
-                MoveDirectionX::Right => {
-                    self.x = MoveDirectionX::None;
-                }
-                _ => {}
-            }
-        }
-        fn right(&mut self) {
-            match self.x {
-                MoveDirectionX::None => {
-                    self.x = MoveDirectionX::Right;
-                }
-                MoveDirectionX::Left => {
-                    self.x = MoveDirectionX::None;
-                }
-                _ => {}
-            }
-        }
-    }
-
     let mut move_direction = MoveDirection::default();
     move_direction.detect_key(&keyboard);
     let mut old_pos = [

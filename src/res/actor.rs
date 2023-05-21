@@ -49,11 +49,10 @@ impl ResActor {
         self.pos
     }
     pub fn get_actual_pos(&self) -> Vec3 {
-        // 为了让actor和包含的gun等元素保持在tilemap之上
-        let actor_above_offset = 10.0;
         let x = self.pos[0] as f32 * SCALE_RATIO;
         let y = self.pos[1] as f32 * SCALE_RATIO;
-        let z = -y + (((28.0 / 2.0) + actor_above_offset) * SCALE_RATIO);
+        // actor需要保持底部与wall的底部齐平
+        let z = -y + ((28.0 / 2.0) * SCALE_RATIO);
         Vec3::new(x, y, z)
     }
     pub fn get_cur_hp(&self) -> u8 {

@@ -59,6 +59,89 @@ pub fn point_light(pos: [u32; 3], color: [u8; 4]) -> PointLightBundle {
     }
 }
 
+#[derive(Default, Debug, Copy, Clone)]
+pub struct MoveDirection {
+    pub x: MoveDirectionX,
+    pub y: MoveDirectionY,
+}
+
+#[derive(Default, Debug, Copy, Clone)]
+pub enum MoveDirectionX {
+    Left,
+    Right,
+    #[default]
+    None,
+}
+
+#[derive(Default, Debug, Copy, Clone)]
+pub enum MoveDirectionY {
+    Up,
+    Down,
+    #[default]
+    None,
+}
+
+impl MoveDirection {
+    pub fn detect_key(&mut self, keyboard: &Input<KeyCode>) {
+        if keyboard.pressed(KeyCode::W) {
+            self.up()
+        }
+        if keyboard.pressed(KeyCode::S) {
+            self.down()
+        }
+        if keyboard.pressed(KeyCode::A) {
+            self.left()
+        }
+        if keyboard.pressed(KeyCode::D) {
+            self.right()
+        }
+    }
+    fn up(&mut self) {
+        match self.y {
+            MoveDirectionY::None => {
+                self.y = MoveDirectionY::Up;
+            }
+            MoveDirectionY::Down => {
+                self.y = MoveDirectionY::None;
+            }
+            _ => {}
+        }
+    }
+    fn down(&mut self) {
+        match self.y {
+            MoveDirectionY::None => {
+                self.y = MoveDirectionY::Down;
+            }
+            MoveDirectionY::Up => {
+                self.y = MoveDirectionY::None;
+            }
+            _ => {}
+        }
+    }
+    fn left(&mut self) {
+        match self.x {
+            MoveDirectionX::None => {
+                self.x = MoveDirectionX::Left;
+            }
+            MoveDirectionX::Right => {
+                self.x = MoveDirectionX::None;
+            }
+            _ => {}
+        }
+    }
+    fn right(&mut self) {
+        match self.x {
+            MoveDirectionX::None => {
+                self.x = MoveDirectionX::Right;
+            }
+            MoveDirectionX::Left => {
+                self.x = MoveDirectionX::None;
+            }
+            _ => {}
+        }
+    }
+}
+
 pub fn split_images<P>(path: P, tile_size: Vec2, columns: usize, rows: usize) -> HashMap<u8, Image>
 where
     P: AsRef<std::path::Path>,
