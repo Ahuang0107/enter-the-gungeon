@@ -20,6 +20,22 @@ impl LevelModel {
         }
         false
     }
+    /// 判断pos所在的tile类型
+    pub fn pos_tile(&self, grid_pos: [i32; 2]) -> Option<TileType> {
+        for room in self.rooms.iter() {
+            if let Some(type_) = room.pos_tile(grid_pos) {
+                return Some(type_);
+            }
+        }
+        None
+    }
+}
+
+#[derive(Eq, PartialEq)]
+pub enum TileType {
+    Floor,
+    Wall,
+    Roof,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Default, Debug)]
@@ -36,6 +52,34 @@ pub struct RoomModel {
 }
 
 impl RoomModel {
+    /// 判断pos所在的tile类型
+    pub fn pos_tile(&self, grid_pos: [i32; 2]) -> Option<TileType> {
+        let rel_grid_x = grid_pos[0] - self.world_pos[0];
+        let rel_grid_y = grid_pos[1] - self.world_pos[1];
+        if rel_grid_x < 0 || rel_grid_y < 0 {
+            return None;
+        }
+        let rel_grid_pos = [rel_grid_x as u32, rel_grid_y as u32];
+        if rel_grid_pos[0] > self.size[0] || rel_grid_pos[1] > self.size[1] {
+            return None;
+        }
+        for tile_group in self.roofs.iter() {
+            if tile_group.contains(rel_grid_pos) {
+                return Some(TileType::Roof);
+            }
+        }
+        for tile_group in self.walls.iter() {
+            if tile_group.contains(rel_grid_pos) {
+                return Some(TileType::Wall);
+            }
+        }
+        for tile_group in self.floors.iter() {
+            if tile_group.contains(rel_grid_pos) {
+                return Some(TileType::Floor);
+            }
+        }
+        None
+    }
     pub fn contains_floor(&self, grid_pos: [i32; 2]) -> bool {
         let rel_grid_x = grid_pos[0] - self.world_pos[0];
         let rel_grid_y = grid_pos[1] - self.world_pos[1];

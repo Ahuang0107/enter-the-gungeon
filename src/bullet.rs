@@ -1,8 +1,10 @@
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 
+use world_generator::TileType;
+
 use crate::cursor::ResCursor;
-use crate::res::{Cache, ResActor, SCALE_RATIO};
+use crate::res::{Cache, ResActor, GRID_SIZE, SCALE_RATIO};
 
 #[derive(Component)]
 pub struct Bullet {
@@ -51,10 +53,28 @@ pub fn fire_bullet(
 pub fn bullet_move(
     mut c: Commands,
     time: Res<Time>,
+    cache: Res<Cache>,
     mut query: Query<(&mut Transform, &Bullet, Entity)>,
 ) {
+    let to_grid_pos = |pos: [f32; 2]| -> [i32; 2] {
+        // TODO 目前不知道为什么整体偏移了(8,-24)
+        let pos = [pos[0] + 8.0, pos[1] + 8.0];
+        [
+            (pos[0] / GRID_SIZE).floor() as i32,
+            (pos[1] / GRID_SIZE).floor() as i32,
+        ]
+    };
     for (mut t, b, e) in query.iter_mut() {
-        if (b.origin - t.translation.truncate()).length() > b.max_distance * SCALE_RATIO {
+        let pos = t.translation.truncate();
+        if let Some(tile_type) =
+            cache.levels[0].pos_tile(to_grid_pos([pos.x / SCALE_RATIO, pos.y / SCALE_RATIO]))
+        {
+            if tile_type == TileType::Roof || tile_type == TileType::Wall {
+                c.entity(e).despawn_recursive();
+                break;
+            }
+        }
+        if (b.origin - pos).length() > b.max_distance * SCALE_RATIO {
             c.entity(e).despawn_recursive();
         } else {
             let movement = time.delta_seconds() * b.velocity * b.speed * SCALE_RATIO;
