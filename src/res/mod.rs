@@ -14,7 +14,7 @@ use crate::{utils, CAMERA_FAR};
 mod actor;
 mod cache;
 
-pub const SCALE_RATIO: f32 = 0.1;
+pub const SCALE_RATIO: f32 = 0.05;
 pub const GRID_SIZE: f32 = 16.0;
 pub const GRID_SIZE_HALF: f32 = 8.0;
 
@@ -284,7 +284,7 @@ pub fn reset_res(
     }
 
     {
-        cache.light_debug_mesh = meshes.add(Mesh::from(shape::Cube::new(0.5)));
+        cache.light_debug_mesh = meshes.add(Mesh::from(shape::Cube::new(5.0 * SCALE_RATIO)));
         cache.light_debug_material = materials.add(StandardMaterial {
             base_color: Color::WHITE,
             unlit: true,

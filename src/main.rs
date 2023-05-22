@@ -120,7 +120,7 @@ fn setup_camera(mut c: Commands) {
     c.spawn((
         Camera3dBundle {
             projection: OrthographicProjection {
-                far: 1500.0,
+                far: 2000.0,
                 ..default()
             }
             .into(),
@@ -129,7 +129,7 @@ fn setup_camera(mut c: Commands) {
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface,
-            transform: Transform::from_xyz(0.0, 0.0, CAMERA_FAR).with_scale(Vec3::splat(0.04)),
+            transform: Transform::from_xyz(0.0, 0.0, CAMERA_FAR).with_scale(Vec3::splat(0.02)),
             ..default()
         },
         BloomSettings::default(),

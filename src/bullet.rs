@@ -2,7 +2,7 @@ use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 
 use crate::cursor::ResCursor;
-use crate::res::{Cache, ResActor};
+use crate::res::{Cache, ResActor, SCALE_RATIO};
 
 #[derive(Component)]
 pub struct Bullet {
@@ -41,8 +41,8 @@ pub fn fire_bullet(
             .insert(Bullet {
                 origin: (actor_pos + fire_offset).truncate(),
                 velocity,
-                speed: 30.0,
-                max_distance: 30.0,
+                speed: 600.0,
+                max_distance: 600.0,
             });
         }
     }
@@ -54,10 +54,10 @@ pub fn bullet_move(
     mut query: Query<(&mut Transform, &Bullet, Entity)>,
 ) {
     for (mut t, b, e) in query.iter_mut() {
-        if (b.origin - t.translation.truncate()).length() > b.max_distance {
+        if (b.origin - t.translation.truncate()).length() > b.max_distance * SCALE_RATIO {
             c.entity(e).despawn_recursive();
         } else {
-            let movement = time.delta_seconds() * b.velocity * b.speed;
+            let movement = time.delta_seconds() * b.velocity * b.speed * SCALE_RATIO;
             t.translation += movement.extend(-movement.y);
         }
     }
