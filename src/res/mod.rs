@@ -281,6 +281,9 @@ pub fn reset_res(
         {
             cache.ui_hp_images.insert(index, images.add(image));
         }
+        cache
+            .ui_card_image
+            .insert(1, server.load("art/ui/gun_card.png"));
     }
 
     {

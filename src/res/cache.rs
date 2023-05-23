@@ -32,7 +32,9 @@ pub struct Cache {
     pub bullet_meshes: HashMap<(u32, u32), Handle<Mesh>>,
     // TODO need to des
     pub old_meshes: HashMap<String, Handle<Mesh>>,
+    // ui相关的image
     pub ui_hp_images: HashMap<u8, Handle<Image>>,
+    pub ui_card_image: HashMap<u8, Handle<Image>>,
     pub light_debug_mesh: Handle<Mesh>,
     pub light_debug_material: Handle<StandardMaterial>,
 }
@@ -72,8 +74,13 @@ impl Cache {
     pub fn get_bullet_material(&self, tag: &str) -> &Handle<StandardMaterial> {
         self.bullet_materials.get(tag).unwrap()
     }
+    /// 角色hp显示，0是满的一颗心，1是半颗心，2是空的心
     pub fn get_hp_image(&self, index: u8) -> &Handle<Image> {
         self.ui_hp_images.get(&index).unwrap()
+    }
+    /// index表示card的叠加数量，从1开始
+    pub fn get_card_image(&self, index: u8) -> &Handle<Image> {
+        self.ui_card_image.get(&index).unwrap()
     }
 }
 

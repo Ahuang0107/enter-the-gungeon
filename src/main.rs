@@ -92,6 +92,8 @@ fn main() {
             tilemap::setup,
             ui::cursor::setup,
             ui::hp::setup,
+            ui::gun_card::setup,
+            ui::item_card::setup,
             character::setup,
         )
             .in_schedule(OnEnter(AppState::InGame)),
