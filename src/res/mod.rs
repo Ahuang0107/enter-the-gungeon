@@ -277,13 +277,50 @@ pub fn reset_res(
 
     {
         for (index, image) in
-            utils::split_images("assets/art/ui/heart.png", Vec2::new(16.0, 16.0), 2, 2)
+            utils::split_images("assets/art/ui/heart.png", Vec2::new(15.0, 13.0), 2, 2)
         {
             cache.ui_hp_images.insert(index, images.add(image));
         }
+        cache.ui_blank_image = server.load("art/ui/blank.png");
+        cache.ui_key_image = server.load("art/ui/key.png");
+        cache.ui_money_image = server.load("art/ui/money.png");
         cache
             .ui_card_image
             .insert(1, server.load("art/ui/gun_card.png"));
+
+        {
+            let mut ammo = None;
+            let mut empty_ammo = None;
+            for (index, image) in utils::split_images(
+                "assets/art/ui/ammo/ammo_budget_revolver.png",
+                Vec2::new(5.0, 3.0),
+                2,
+                1,
+            ) {
+                match index {
+                    0 => ammo = Some(image),
+                    1 => empty_ammo = Some(image),
+                    _ => break,
+                }
+            }
+            let ammo = ammo.unwrap();
+            let empty_ammo = empty_ammo.unwrap();
+            cache.ui_ammo_images.insert(
+                String::from("budget_revolver"),
+                (images.add(ammo), images.add(empty_ammo)),
+            );
+            cache.ui_ammo_border = server.load("art/ui/ammo_border.png")
+        }
+        {
+            // 目前ascii的贴图中存的就是从第33个ascii码的空格开始到第127个（最后第二个）ascii码的～的像素
+            for (index, image) in
+                utils::split_images("assets/art/ui/font/ascii.png", Vec2::new(7.0, 9.0), 10, 10)
+            {
+                cache
+                    .ui_ascii_font
+                    .set((index + 32) as char, images.add(image));
+            }
+        }
     }
 
     {

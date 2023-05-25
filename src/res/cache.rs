@@ -34,7 +34,13 @@ pub struct Cache {
     pub old_meshes: HashMap<String, Handle<Mesh>>,
     // ui相关的image
     pub ui_hp_images: HashMap<u8, Handle<Image>>,
+    pub ui_blank_image: Handle<Image>,
+    pub ui_key_image: Handle<Image>,
+    pub ui_money_image: Handle<Image>,
     pub ui_card_image: HashMap<u8, Handle<Image>>,
+    pub ui_ammo_images: HashMap<String, (Handle<Image>, Handle<Image>)>,
+    pub ui_ammo_border: Handle<Image>,
+    pub ui_ascii_font: AsciiFontTable,
     pub light_debug_mesh: Handle<Mesh>,
     pub light_debug_material: Handle<StandardMaterial>,
 }
@@ -65,6 +71,9 @@ impl Cache {
             self.gun_meshes.get(&key).unwrap()
         }
     }
+    pub fn get_gun_image(&self, tag: &str, index: u8) -> &Handle<Image> {
+        self.gun_images.get(tag).unwrap().get(&index).unwrap()
+    }
     pub fn get_gun_material(&self, tag: &str, index: u8) -> &Handle<StandardMaterial> {
         self.gun_materials.get(tag).unwrap().get(&index).unwrap()
     }
@@ -81,6 +90,10 @@ impl Cache {
     /// index表示card的叠加数量，从1开始
     pub fn get_card_image(&self, index: u8) -> &Handle<Image> {
         self.ui_card_image.get(&index).unwrap()
+    }
+    /// name是枪械的名称，index==0是空弹药，index==1是有弹药
+    pub fn get_ui_ammo_images(&self, name: &str) -> &(Handle<Image>, Handle<Image>) {
+        self.ui_ammo_images.get(name).unwrap()
     }
 }
 
@@ -103,5 +116,23 @@ impl<T: Asset> ActorAssets<T> {
     }
     pub fn get_frames(&self, tag: &str) -> &Vec<Handle<T>> {
         self.assets.get(tag).unwrap()
+    }
+}
+
+/// 英文字体表
+///
+/// 当语言为英文时，理论上只需要显示26个英文字母大小写+10个数字
+/// 都使用等宽像素字体并以贴图的形式加载进来
+#[derive(Default)]
+pub struct AsciiFontTable {
+    table: HashMap<char, Handle<Image>>,
+}
+
+impl AsciiFontTable {
+    pub fn set(&mut self, key: char, value: Handle<Image>) {
+        self.table.insert(key, value);
+    }
+    pub fn get(&self, key: char) -> &Handle<Image> {
+        self.table.get(&key).unwrap()
     }
 }

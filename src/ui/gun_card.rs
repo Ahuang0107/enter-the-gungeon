@@ -13,6 +13,8 @@ pub fn setup(mut c: Commands, cache: Res<Cache>) {
                 position_type: PositionType::Absolute,
                 position: UiRect::new(Val::Auto, Val::Px(24.0), Val::Auto, Val::Px(8.0)),
                 size: Size::new(Val::Px(90.0), Val::Px(58.0)),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
                 ..default()
             },
             image: UiImage {
@@ -22,5 +24,21 @@ pub fn setup(mut c: Commands, cache: Res<Cache>) {
             ..default()
         },
         GunCardUi,
-    ));
+    ))
+    .with_children(|p| {
+        p.spawn((
+            Name::new("Gun Card Content"),
+            ImageBundle {
+                style: Style {
+                    size: Size::new(Val::Px(32.0), Val::Px(32.0)),
+                    ..default()
+                },
+                image: UiImage {
+                    texture: cache.get_gun_image("Budget Revolver", 1).clone(),
+                    ..default()
+                },
+                ..default()
+            },
+        ));
+    });
 }

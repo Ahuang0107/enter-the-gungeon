@@ -142,6 +142,7 @@ impl MoveDirection {
     }
 }
 
+/// 读取并按照行列切割图片
 pub fn split_images<P>(path: P, tile_size: Vec2, columns: usize, rows: usize) -> HashMap<u8, Image>
 where
     P: AsRef<std::path::Path>,

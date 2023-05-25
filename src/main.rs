@@ -91,9 +91,10 @@ fn main() {
         (
             tilemap::setup,
             ui::cursor::setup,
-            ui::hp::setup,
+            ui::status::setup,
             ui::gun_card::setup,
             ui::item_card::setup,
+            ui::ammo::setup,
             character::setup,
         )
             .in_schedule(OnEnter(AppState::InGame)),
@@ -106,7 +107,7 @@ fn main() {
             character::update_gun_direction,
             res::update_actor,
             ui::cursor::update,
-            ui::hp::update,
+            ui::status::update,
             bullet::fire_bullet,
             bullet::bullet_move,
         )

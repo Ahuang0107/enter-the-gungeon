@@ -13,6 +13,8 @@ pub fn setup(mut c: Commands, cache: Res<Cache>) {
                 position_type: PositionType::Absolute,
                 position: UiRect::new(Val::Px(24.0), Val::Auto, Val::Auto, Val::Px(8.0)),
                 size: Size::new(Val::Px(90.0), Val::Px(58.0)),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
                 ..default()
             },
             image: UiImage {

@@ -13,8 +13,7 @@ pub struct ResActor {
     direction: ActorDirection,
     gun_hand: ActorGunHand,
     move_speed: f32,
-    hp_full: u8,
-    hp: u8,
+    status: ActorStatus,
     #[reflect(ignore)]
     gun: Option<ResGun>,
 }
@@ -25,8 +24,11 @@ impl ResActor {
         let default_hp = 6;
         Self {
             move_speed: 100.0,
-            hp_full: default_hp,
-            hp: default_hp,
+            status: ActorStatus {
+                hp_full: default_hp,
+                hp: default_hp,
+                blanks: 2,
+            },
             ..Default::default()
         }
     }
@@ -55,8 +57,8 @@ impl ResActor {
         let z = -y + ((28.0 / 2.0) * SCALE_RATIO);
         Vec3::new(x, y, z)
     }
-    pub fn get_cur_hp(&self) -> u8 {
-        self.hp
+    pub fn get_status(&self) -> &ActorStatus {
+        &self.status
     }
     /// gun需要旋转的角度
     fn get_gun_radians(&self) -> f32 {
@@ -276,5 +278,21 @@ impl ResGun {
                 Quat::from_rotation_z(PI / (180.0 / self.cursor_angle))
             }
         }
+    }
+}
+
+#[derive(Reflect, Default)]
+pub struct ActorStatus {
+    hp_full: u8,
+    hp: u8,
+    blanks: u8,
+}
+
+impl ActorStatus {
+    pub fn get_cur_hp(&self) -> u8 {
+        self.hp
+    }
+    pub fn get_blanks(&self) -> u8 {
+        self.blanks
     }
 }
