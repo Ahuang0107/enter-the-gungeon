@@ -41,6 +41,7 @@ pub struct Cache {
     pub ui_ammo_images: HashMap<String, (Handle<Image>, Handle<Image>)>,
     pub ui_ammo_border: Handle<Image>,
     pub ui_ascii_font: AsciiFontTable,
+    pub ui_title_dragon: Vec<Handle<Image>>,
     pub light_debug_mesh: Handle<Mesh>,
     pub light_debug_material: Handle<StandardMaterial>,
 }

@@ -1,11 +1,13 @@
 use bevy::prelude::*;
 
+use crate::res::Cache;
+use crate::ui_image_animation::UiImageAnimation;
 use crate::AppState;
 
 #[derive(Component)]
 pub struct TitleUi;
 
-pub fn setup(mut c: Commands, asset_server: Res<AssetServer>) {
+pub fn setup(mut c: Commands, cache: Res<Cache>, asset_server: Res<AssetServer>) {
     c.spawn(NodeBundle {
         style: Style {
             flex_direction: FlexDirection::Column,
@@ -55,18 +57,17 @@ pub fn setup(mut c: Commands, asset_server: Res<AssetServer>) {
             },
             ..default()
         });
-        p.spawn(ImageBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                position: UiRect::new(Val::Auto, Val::Px(183.0), Val::Auto, Val::Px(345.0)),
+        p.spawn((
+            ImageBundle {
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    position: UiRect::new(Val::Auto, Val::Px(183.0), Val::Auto, Val::Px(345.0)),
+                    ..default()
+                },
                 ..default()
             },
-            image: UiImage {
-                texture: asset_server.load("art/ui/dragon_single.png"),
-                ..default()
-            },
-            ..default()
-        });
+            UiImageAnimation::from_loop(0.2, cache.ui_title_dragon.clone()),
+        ));
         let font_handle = asset_server.load("fonts/ThaleahFat.ttf");
         p.spawn(
             TextBundle::from_section(

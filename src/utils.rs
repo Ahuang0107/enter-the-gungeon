@@ -182,6 +182,46 @@ where
     texture_atlas
 }
 
+/// 读取并按照行列切割图片
+pub fn split_images_to_vec<P>(path: P, tile_size: Vec2, columns: usize, rows: usize) -> Vec<Image>
+where
+    P: AsRef<std::path::Path>,
+{
+    let mut texture_atlas = vec![];
+    let mut dynamic_image = image::open(path).unwrap();
+    let buffer = dynamic_image.as_mut_rgba8().unwrap();
+    for y in 0..rows {
+        for x in 0..columns {
+            let cell = Vec2::new(x as f32, y as f32);
+            let rect_min = tile_size * cell;
+            let rect = Rect {
+                min: rect_min,
+                max: rect_min + tile_size,
+            };
+            let sub_buffer = image::imageops::crop(
+                buffer,
+                rect.min.x as u32,
+                rect.min.y as u32,
+                tile_size.x as u32,
+                tile_size.y as u32,
+            )
+            .to_image();
+            let sub_image = Image::new(
+                Extent3d {
+                    width: sub_buffer.width(),
+                    height: sub_buffer.height(),
+                    depth_or_array_layers: 1,
+                },
+                TextureDimension::D2,
+                sub_buffer.into_raw(),
+                TextureFormat::Rgba8UnormSrgb,
+            );
+            texture_atlas.push(sub_image);
+        }
+    }
+    texture_atlas
+}
+
 pub fn load_actor_sprite<P>(config_path: P, image_path: P) -> HashMap<String, Vec<Image>>
 where
     P: AsRef<std::path::Path>,

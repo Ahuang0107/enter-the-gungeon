@@ -16,6 +16,7 @@ mod res;
 mod sprite_animation;
 mod tilemap;
 mod ui;
+mod ui_image_animation;
 mod utils;
 
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -77,9 +78,11 @@ fn main() {
     app.insert_resource(ResActor::convict().with_budget_revolver());
     app.insert_resource(TaskQueue::new());
     app.add_startup_system(setup_camera);
+    app.add_startup_system(res::initial_res);
     app.add_system(auto_next_state);
     app.add_system(sprite_animation::update_sprite);
     app.add_system(sprite_animation::sprite_animation);
+    app.add_system(ui_image_animation::update);
 
     app.add_system((ui::title::setup).in_schedule(OnEnter(AppState::Title)));
     app.add_system((ui::title::detect_start).in_set(OnUpdate(AppState::Title)));

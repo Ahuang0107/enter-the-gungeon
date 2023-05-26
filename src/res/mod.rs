@@ -18,6 +18,13 @@ pub const SCALE_RATIO: f32 = 0.05;
 pub const GRID_SIZE: f32 = 16.0;
 pub const GRID_SIZE_HALF: f32 = 8.0;
 
+pub fn initial_res(mut cache: ResMut<Cache>, mut images: ResMut<Assets<Image>>) {
+    for image in utils::split_images_to_vec("assets/art/ui/dragon.png", Vec2::new(74.0, 77.0), 8, 1)
+    {
+        cache.ui_title_dragon.push(images.add(image));
+    }
+}
+
 pub fn reset_res(
     mut cache: ResMut<Cache>,
     mut actor: ResMut<ResActor>,
