@@ -8,6 +8,8 @@ use bevy_kira_audio::prelude::*;
 use bevy_task_queue::TaskQueue;
 use res::{Cache, ResActor};
 
+mod actor;
+mod animation;
 mod bullet;
 mod character;
 mod cursor;
@@ -77,6 +79,7 @@ fn main() {
     app.insert_resource(Cache::default());
     app.insert_resource(ResActor::convict().with_budget_revolver());
     app.insert_resource(TaskQueue::new());
+    app.add_event::<actor::event::CloudPuffEvent>();
     app.add_startup_system(setup_camera);
     app.add_startup_system(res::initial_res);
     app.add_system(auto_next_state);
@@ -113,6 +116,9 @@ fn main() {
             ui::status::update,
             bullet::fire_bullet,
             bullet::bullet_move,
+            actor::event::handle_cloud_puff_ev,
+            animation::update,
+            animation::despawn_finished,
         )
             .in_set(OnUpdate(AppState::InGame)),
     );

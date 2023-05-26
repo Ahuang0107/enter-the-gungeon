@@ -9,6 +9,7 @@ pub use cache::{ActorAssets, Cache};
 use world_generator::LevelModel;
 
 use crate::character::CopActor;
+use crate::res::cache::ActorCache;
 use crate::{utils, CAMERA_FAR};
 
 mod actor;
@@ -338,6 +339,30 @@ pub fn reset_res(
             depth_bias: 20.0,
             ..default()
         });
+    }
+    {
+        let mut cloud_puff_materials = vec![];
+        for image in utils::split_images_to_vec(
+            "assets/art/actor/the_convict/cloud_puff.png",
+            Vec2::new(11.0, 11.0),
+            6,
+            1,
+        ) {
+            cloud_puff_materials.push(materials.add(StandardMaterial {
+                base_color_texture: Some(images.add(image)),
+                alpha_mode: AlphaMode::Blend,
+                unlit: true,
+                depth_bias: 15.0,
+                ..default()
+            }));
+        }
+        cache.actor_caches = ActorCache {
+            cloud_puff_mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
+                11.0 * SCALE_RATIO,
+                11.0 * SCALE_RATIO * SQRT_2,
+            )))),
+            cloud_puff_materials,
+        };
     }
 }
 

@@ -5,6 +5,7 @@ use bevy::prelude::*;
 use bevy_kira_audio::AudioControl;
 use rand::Rng;
 
+use crate::actor::event::CloudPuffEvent;
 use crate::cursor::ResCursor;
 use crate::res::{
     ActorAction, ActorDirection, ActorGunHand, Cache, ResActor, GRID_SIZE, SCALE_RATIO,
@@ -385,16 +386,26 @@ pub fn character_move(
 }
 
 pub fn play_character_sound(
-    query: Query<&ActorMaterialSprite, With<CopActor>>,
+    mut query: Query<&mut ActorMaterialSprite, With<CopActor>>,
     asset_server: Res<AssetServer>,
     audio: Res<bevy_kira_audio::Audio>,
+    mut ev: EventWriter<CloudPuffEvent>,
 ) {
     if !audio.is_playing_sound() {
-        for sprite in query.iter() {
-            if let Some(index) = sprite.index() {
-                match index {
-                    17 | 20 | 23 | 26 | 29 | 32 | 35 | 38 => {
-                        match rand::thread_rng().gen_range(1..4) {
+        for mut sprite in query.iter_mut() {
+            if let Some((tag, index)) = sprite.just_tag_index() {
+                if [
+                    ActorTag::WalkB1h,
+                    ActorTag::WalkF1h,
+                    ActorTag::WalkBs0h,
+                    ActorTag::WalkFs1h,
+                ]
+                .iter()
+                .find(|t| t.tag() == tag)
+                .is_some()
+                {
+                    match index {
+                        2 | 5 => match rand::thread_rng().gen_range(1..4) {
                             1 => {
                                 audio.play(asset_server.load("sound/barefoot_stone_01.wav"));
                             }
@@ -405,9 +416,10 @@ pub fn play_character_sound(
                                 audio.play(asset_server.load("sound/barefoot_stone_03.wav"));
                             }
                             _ => {}
-                        }
+                        },
+                        3 => ev.send(CloudPuffEvent),
+                        _ => {}
                     }
-                    _ => {}
                 }
             }
         }

@@ -17,7 +17,10 @@ pub struct ActorMaterialSprite {
     detail: Option<ActorSpriteDetail>,
     material: Option<Handle<StandardMaterial>>,
     pub flip_x: bool,
+    /// 帮助anima播放时判断是否需要更新用的
     changed: bool,
+    /// 帮助判断是否刚刚切换到该状态
+    just_updated: bool,
 }
 
 impl ActorMaterialSprite {
@@ -25,10 +28,15 @@ impl ActorMaterialSprite {
         self.material = Some(material.clone());
         self.changed = true;
         self.detail = Some(detail.clone());
+        self.just_updated = true;
     }
-    pub fn index(&self) -> Option<usize> {
+    pub fn just_tag_index(&mut self) -> Option<(String, usize)> {
+        if !self.just_updated {
+            return None;
+        }
+        self.just_updated = false;
         if let Some(detail) = &self.detail {
-            Some(detail.index)
+            Some((detail.tag.clone(), detail.index))
         } else {
             None
         }

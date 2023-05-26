@@ -30,7 +30,7 @@ pub struct MoneyCountUi;
 /// 其中每个元素上下左右都间隔1px
 pub fn setup(mut c: Commands, actor: Res<ResActor>, cache: Res<Cache>) {
     let status = actor.get_status();
-    let mut origin = [6.0, 8.0];
+    let origin = [6.0, 8.0];
     let mut offset_y = origin[1];
     // HP的UI
     {

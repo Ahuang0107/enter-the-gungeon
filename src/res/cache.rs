@@ -44,6 +44,7 @@ pub struct Cache {
     pub ui_title_dragon: Vec<Handle<Image>>,
     pub light_debug_mesh: Handle<Mesh>,
     pub light_debug_material: Handle<StandardMaterial>,
+    pub actor_caches: ActorCache,
 }
 
 impl Cache {
@@ -140,4 +141,10 @@ impl AsciiFontTable {
             None => panic!("unable to find font with {}", key),
         }
     }
+}
+
+#[derive(Default)]
+pub struct ActorCache {
+    pub cloud_puff_mesh: Handle<Mesh>,
+    pub cloud_puff_materials: Vec<Handle<StandardMaterial>>,
 }
