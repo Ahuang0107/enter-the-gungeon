@@ -219,3 +219,48 @@ where
     }
     result
 }
+
+pub fn u8_to_chars(value: u8) -> Vec<char> {
+    let result = if value < 10 {
+        vec![(value + b'0') as char]
+    } else if value < 100 {
+        let tens_digit = value / 10;
+        let digit = value % 10;
+        vec![(tens_digit + b'0') as char, (digit + b'0') as char]
+    } else {
+        let hundreds_digit = value / 100;
+        let tens_digit = (value % 100) / 10;
+        let digit = value % 10;
+        vec![
+            (hundreds_digit + b'0') as char,
+            (tens_digit + b'0') as char,
+            (digit + b'0') as char,
+        ]
+    };
+    debug!("convert u8 {value} to {result:?}");
+    return result;
+}
+
+pub fn u16_to_chars(value: u16) -> Vec<char> {
+    let result = if value < 10 {
+        vec![(value as u8 + b'0') as char]
+    } else if value < 100 {
+        let tens_digit = value / 10;
+        let digit = value % 10;
+        vec![
+            (tens_digit as u8 + b'0') as char,
+            (digit as u8 + b'0') as char,
+        ]
+    } else {
+        let hundreds_digit = value / 100;
+        let tens_digit = (value % 100) / 10;
+        let digit = value % 10;
+        vec![
+            (hundreds_digit as u8 + b'0') as char,
+            (tens_digit as u8 + b'0') as char,
+            (digit as u8 + b'0') as char,
+        ]
+    };
+    debug!("convert u16 {value:?} to {result:?}");
+    return result;
+}

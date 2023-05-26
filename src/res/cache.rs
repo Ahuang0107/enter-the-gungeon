@@ -123,6 +123,7 @@ impl<T: Asset> ActorAssets<T> {
 ///
 /// 当语言为英文时，理论上只需要显示26个英文字母大小写+10个数字
 /// 都使用等宽像素字体并以贴图的形式加载进来
+/// TODO 实际上起码数字用等宽不好看，需要改成非等宽字体
 #[derive(Default)]
 pub struct AsciiFontTable {
     table: HashMap<char, Handle<Image>>,
@@ -133,6 +134,9 @@ impl AsciiFontTable {
         self.table.insert(key, value);
     }
     pub fn get(&self, key: char) -> &Handle<Image> {
-        self.table.get(&key).unwrap()
+        match self.table.get(&key) {
+            Some(r) => return r,
+            None => panic!("unable to find font with {}", key),
+        }
     }
 }

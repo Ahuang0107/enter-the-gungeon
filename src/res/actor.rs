@@ -28,6 +28,8 @@ impl ResActor {
                 hp_full: default_hp,
                 hp: default_hp,
                 blanks: 2,
+                keys: 10,
+                money: 10,
             },
             ..Default::default()
         }
@@ -286,6 +288,8 @@ pub struct ActorStatus {
     hp_full: u8,
     hp: u8,
     blanks: u8,
+    keys: u8,
+    money: u16,
 }
 
 impl ActorStatus {
@@ -294,5 +298,11 @@ impl ActorStatus {
     }
     pub fn get_blanks(&self) -> u8 {
         self.blanks
+    }
+    pub fn get_keys(&self) -> u8 {
+        self.keys
+    }
+    pub fn get_money(&self) -> u16 {
+        self.money
     }
 }
