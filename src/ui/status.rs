@@ -9,6 +9,7 @@ pub struct HpUi {
     second: u8,
 }
 
+#[allow(dead_code)]
 #[derive(Component)]
 pub struct BlankUi {
     index: u8,

@@ -18,12 +18,13 @@ pub fn handle_cloud_puff_ev(
         let mut pos = actor.get_actual_pos();
         // 🫧气泡生成的位置应该比actor稍低一些，在脚附近
         pos.y -= 6.0 * SCALE_RATIO;
+        pos.z += 6.0 * SCALE_RATIO;
         c.spawn((
             Name::from("Cloud Puff"),
             PbrBundle {
                 mesh: cache.actor_caches.cloud_puff_mesh.clone(),
                 material: cache.actor_caches.cloud_puff_materials[0].clone(),
-                transform: Transform::from_xyz(pos.x, pos.y, -pos.y)
+                transform: Transform::from_xyz(pos.x, pos.y, pos.z)
                     .with_rotation(Quat::from_rotation_x(-PI / 4.0)),
                 ..default()
             },

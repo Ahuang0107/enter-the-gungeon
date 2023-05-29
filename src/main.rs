@@ -126,13 +126,13 @@ fn main() {
     app.run();
 }
 
-pub const CAMERA_FAR: f32 = 30.0;
+pub const CAMERA_FAR: f32 = 40.0;
 
 fn setup_camera(mut c: Commands) {
     c.spawn((
         Camera3dBundle {
             projection: OrthographicProjection {
-                far: 2000.0,
+                far: 4000.0,
                 ..default()
             }
             .into(),
@@ -141,7 +141,9 @@ fn setup_camera(mut c: Commands) {
                 ..default()
             },
             tonemapping: Tonemapping::TonyMcMapface,
-            transform: Transform::from_xyz(0.0, 0.0, CAMERA_FAR).with_scale(Vec3::splat(0.02)),
+            transform: Transform::from_xyz(0.0, CAMERA_FAR, CAMERA_FAR)
+                .looking_to(Vec3::new(0.0, -1.0, -1.0), Vec3::Y)
+                .with_scale(Vec3::splat(0.02)),
             ..default()
         },
         BloomSettings::default(),

@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::f32::consts::{PI, SQRT_2};
 
 use bevy::prelude::*;
 
@@ -54,9 +54,10 @@ impl ResActor {
     }
     pub fn get_actual_pos(&self) -> Vec3 {
         let x = self.pos[0] as f32 * SCALE_RATIO;
-        let y = self.pos[1] as f32 * SCALE_RATIO;
-        // actor需要保持底部与wall的底部齐平
-        let z = -y + ((28.0 / 2.0) * SCALE_RATIO);
+        let offset = (28.0 / 2.0) * SCALE_RATIO;
+        // actor实际上需要保持在floor之上，所以整体向镜头靠近
+        let y = 0.0 + offset;
+        let z = -self.pos[1] as f32 * SCALE_RATIO * SQRT_2 + offset;
         Vec3::new(x, y, z)
     }
     pub fn get_status(&self) -> &ActorStatus {

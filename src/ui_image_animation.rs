@@ -10,6 +10,7 @@ pub struct UiImageAnimation {
     just_last: bool,
 }
 
+#[allow(dead_code)]
 impl UiImageAnimation {
     pub fn from_loop(interval: f32, frames: Vec<Handle<Image>>) -> Self {
         Self {

@@ -146,7 +146,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     {
                                         let grid_x = tile.px[0] / 16;
                                         let grid_y = tile.px[1] / 16;
-                                        let grid_y = grid_size[1] - grid_y;
+                                        // 比如room高5行，当前是从上往下数第4行，grid_y就是3
+                                        // 那么转化后就会变成从下往上数第2行，grid_y就是2
+                                        let grid_y = grid_size[1] - grid_y - 1;
                                         tile_group.insert(grid_x, grid_y, *index);
                                     }
                                 }

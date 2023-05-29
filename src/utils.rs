@@ -5,22 +5,21 @@ use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
 use crate::res::{GRID_SIZE, SCALE_RATIO};
+use crate::CAMERA_FAR;
 
 /// wall tile
 pub fn tile_wall_sprite(
     mesh: &Handle<Mesh>,
     material: &Handle<StandardMaterial>,
     relative_pos: [i32; 2],
-    height: u32,
+    _: u32,
 ) -> PbrBundle {
     let x = relative_pos[0] as f32 * GRID_SIZE * SCALE_RATIO;
-    let y = relative_pos[1] as f32 * GRID_SIZE * SCALE_RATIO;
-    let z_offset = (height / 2) as f32 * SQRT_2 * SCALE_RATIO;
-    let z = -y + z_offset;
+    let z = -relative_pos[1] as f32 * GRID_SIZE * SCALE_RATIO * SQRT_2;
     PbrBundle {
         mesh: mesh.clone(),
         material: material.clone(),
-        transform: Transform::from_xyz(x, y, z),
+        transform: Transform::from_xyz(x, 0.0, z),
         ..default()
     }
 }
@@ -31,20 +30,18 @@ pub fn tile_floor_sprite(
     relative_pos: [i32; 2],
 ) -> PbrBundle {
     let x = relative_pos[0] as f32 * GRID_SIZE * SCALE_RATIO;
-    let y = relative_pos[1] as f32 * GRID_SIZE * SCALE_RATIO;
-    let z = -y;
+    let z = -relative_pos[1] as f32 * GRID_SIZE * SCALE_RATIO * SQRT_2;
     PbrBundle {
         mesh: mesh.clone(),
         material: material.clone(),
-        transform: Transform::from_xyz(x, y, z).with_rotation(Quat::from_rotation_x(-PI / 4.0)),
+        transform: Transform::from_xyz(x, 0.0, z).with_rotation(Quat::from_rotation_x(-PI / 2.0)),
         ..default()
     }
 }
 
 pub fn point_light(pos: [u32; 3], color: [u8; 4]) -> PointLightBundle {
-    let x = pos[0] as f32 * SCALE_RATIO * GRID_SIZE;
-    let y = pos[1] as f32 * GRID_SIZE * SCALE_RATIO;
-    let z = -y;
+    let x = pos[0] as f32 * GRID_SIZE * SCALE_RATIO;
+    let z = -(pos[1] as f32) * GRID_SIZE * SCALE_RATIO * SQRT_2;
     PointLightBundle {
         point_light: PointLight {
             color: Color::rgba_u8(color[0], color[1], color[2], color[3]),
@@ -54,7 +51,7 @@ pub fn point_light(pos: [u32; 3], color: [u8; 4]) -> PointLightBundle {
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_xyz(x, y, z),
+        transform: Transform::from_xyz(x, 0.0, z),
         ..default()
     }
 }
@@ -303,4 +300,24 @@ pub fn u16_to_chars(value: u16) -> Vec<char> {
     };
     debug!("convert u16 {value:?} to {result:?}");
     return result;
+}
+
+pub fn tilemap_pos_to_xy_pos(tilemap_pos: [f32; 2]) -> Vec3 {
+    let x = tilemap_pos[0] as f32 * SCALE_RATIO;
+    let z = -tilemap_pos[1] as f32 * SCALE_RATIO * SQRT_2;
+    Vec3::new(x, 0.0, z)
+}
+
+pub fn tilemap_pos_to_camera_pos(tilemap_pos: [f32; 2]) -> Vec3 {
+    let mut actual_pos = tilemap_pos_to_xy_pos(tilemap_pos);
+    actual_pos.z += CAMERA_FAR;
+    actual_pos.y += CAMERA_FAR;
+    actual_pos
+}
+
+pub fn camera_pos_to_tilemap_pos(camera_pos: Vec3) -> [f32; 2] {
+    [
+        camera_pos.x / SCALE_RATIO,
+        -(camera_pos.z - CAMERA_FAR) / SQRT_2 / SCALE_RATIO,
+    ]
 }

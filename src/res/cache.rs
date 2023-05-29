@@ -42,11 +42,15 @@ pub struct Cache {
     pub ui_ammo_border: Handle<Image>,
     pub ui_ascii_font: AsciiFontTable,
     pub ui_title_dragon: Vec<Handle<Image>>,
+    pub tile_debug_mesh: Handle<Mesh>,
     pub light_debug_mesh: Handle<Mesh>,
+    pub tile_world_debug_material: Handle<StandardMaterial>,
+    pub tile_room_debug_material: Handle<StandardMaterial>,
     pub light_debug_material: Handle<StandardMaterial>,
     pub actor_caches: ActorCache,
 }
 
+#[allow(dead_code)]
 impl Cache {
     pub fn get_tile_mesh(&self, key: (u32, u32)) -> &Handle<Mesh> {
         self.tile_meshes.get(&key).unwrap()

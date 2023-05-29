@@ -1,3 +1,5 @@
+use std::f32::consts::SQRT_2;
+
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy_inspector_egui::quick::{ResourceInspectorPlugin, WorldInspectorPlugin};
@@ -6,6 +8,7 @@ use bevy_screen_diagnostics::{ScreenDiagnosticsPlugin, ScreenFrameDiagnosticsPlu
 use crate::cursor::ResCursor;
 use crate::res::ResActor;
 use crate::sprite_animation::{ActorMaterialSprite, ActorSpriteAnimation};
+use crate::CAMERA_FAR;
 
 pub struct DebugPlugin;
 
@@ -57,7 +60,8 @@ fn move_camera(
 
     for mut camera_transform in query_cameras.iter_mut() {
         camera_transform.translation.x = camera_current.x;
-        camera_transform.translation.y = camera_current.y;
+        camera_transform.translation.y = (camera_current.y / SQRT_2) + CAMERA_FAR;
+        camera_transform.translation.z = -(camera_current.y / SQRT_2) + CAMERA_FAR;
     }
 }
 

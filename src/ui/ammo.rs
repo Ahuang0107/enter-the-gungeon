@@ -8,6 +8,7 @@ pub struct AmmoBorderTopUi;
 #[derive(Component)]
 pub struct AmmoBorderBottomUi;
 
+#[allow(dead_code)]
 #[derive(Component)]
 pub struct AmmoUi {
     index: i32,

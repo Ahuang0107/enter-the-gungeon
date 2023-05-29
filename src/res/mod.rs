@@ -10,7 +10,7 @@ use world_generator::LevelModel;
 
 use crate::character::CopActor;
 use crate::res::cache::ActorCache;
-use crate::{utils, CAMERA_FAR};
+use crate::utils;
 
 mod actor;
 mod cache;
@@ -37,6 +37,10 @@ pub fn reset_res(
     let level = LevelModel::from("assets/levels/demo_output.json").unwrap();
     cache.levels.push(level.clone());
     actor.set_tilemap_pos({
+        // 把birth point设定成[1,1]了
+        // [0,0]点是左下角为原点的位置
+        // 但是实际放入bevy坐标系时，是不处理gird point到world point的处理的
+        // 也就是说实际上x轴和y轴都偏移的8像素
         let pos = level.brith_point;
         [pos[0] as f32 * GRID_SIZE, pos[1] as f32 * GRID_SIZE]
     });
@@ -332,9 +336,28 @@ pub fn reset_res(
     }
 
     {
-        cache.light_debug_mesh = meshes.add(Mesh::from(shape::Cube::new(5.0 * SCALE_RATIO)));
-        cache.light_debug_material = materials.add(StandardMaterial {
+        cache.tile_debug_mesh = meshes.add(Mesh::from(shape::UVSphere {
+            radius: GRID_SIZE_HALF * SCALE_RATIO,
+            ..default()
+        }));
+        cache.light_debug_mesh = meshes.add(Mesh::from(shape::UVSphere {
+            radius: 3.0 * SCALE_RATIO,
+            ..default()
+        }));
+        cache.tile_world_debug_material = materials.add(StandardMaterial {
             base_color: Color::WHITE,
+            unlit: true,
+            depth_bias: 20.0,
+            ..default()
+        });
+        cache.tile_room_debug_material = materials.add(StandardMaterial {
+            base_color: Color::RED,
+            unlit: true,
+            depth_bias: 20.0,
+            ..default()
+        });
+        cache.light_debug_material = materials.add(StandardMaterial {
+            base_color: Color::ORANGE,
             unlit: true,
             depth_bias: 20.0,
             ..default()
@@ -359,7 +382,7 @@ pub fn reset_res(
         cache.actor_caches = ActorCache {
             cloud_puff_mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(
                 11.0 * SCALE_RATIO,
-                11.0 * SCALE_RATIO * SQRT_2,
+                11.0 * SCALE_RATIO,
             )))),
             cloud_puff_materials,
         };
@@ -375,8 +398,6 @@ pub fn update_actor(
         t.translation = actor.get_actual_pos();
     }
     for mut t in camera_query.iter_mut() {
-        let mut actual_pos = actor.get_actual_pos();
-        actual_pos.z += CAMERA_FAR;
-        t.translation = actual_pos;
+        t.translation = utils::tilemap_pos_to_camera_pos(actor.get_tilemap_pos());
     }
 }

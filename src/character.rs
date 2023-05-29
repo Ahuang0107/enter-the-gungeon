@@ -8,7 +8,7 @@ use rand::Rng;
 use crate::actor::event::CloudPuffEvent;
 use crate::cursor::ResCursor;
 use crate::res::{
-    ActorAction, ActorDirection, ActorGunHand, Cache, ResActor, GRID_SIZE, SCALE_RATIO,
+    ActorAction, ActorDirection, ActorGunHand, Cache, ResActor, GRID_SIZE, GRID_SIZE_HALF,
 };
 use crate::sprite_animation::{ActorMaterialSprite, ActorSpriteAnimation};
 use crate::utils::{MoveDirection, MoveDirectionX, MoveDirectionY};
@@ -56,10 +56,19 @@ pub fn setup(mut c: Commands, cache: Res<Cache>, actor: ResMut<ResActor>) {
         transform: Transform {
             translation: actor.get_actual_pos(),
             ..default()
-        },
+        }
+        .with_rotation(Quat::from_rotation_x(-PI / 4.0)),
         ..default()
     })
     .with_children(|p| {
+        // p.spawn((
+        //     Name::from("debug node"),
+        //     PbrBundle {
+        //         mesh: cache.tile_debug_mesh.clone(),
+        //         material: cache.tile_world_debug_material.clone(),
+        //         ..default()
+        //     },
+        // ));
         if let Some(actor_gun) = actor.get_cur_gun() {
             let name = actor_gun.name.clone();
             let size = actor_gun.size;
@@ -225,14 +234,13 @@ pub fn character_move(
 ) {
     let mut move_direction = MoveDirection::default();
     move_direction.detect_key(&keyboard);
-    let mut old_pos = [
-        actor.get_actual_pos().x / SCALE_RATIO,
-        actor.get_actual_pos().y / SCALE_RATIO,
-    ];
+    let mut old_pos = actor.get_tilemap_pos();
     let speed = time.delta_seconds() * actor.get_move_speed();
     let to_grid_pos = |pos: [f32; 2]| -> [i32; 2] {
-        // TODO 目前不知道为什么整体偏移了(8,-24)
-        let pos = [pos[0] + 8.0, pos[1] + 8.0];
+        // ltdk存储的是tile左下角的位置信息
+        // 但是实际加载时是当作中心点来加载的
+        // 所以判断碰撞时需要整体偏移(8,8)
+        let pos = [pos[0] + GRID_SIZE_HALF, pos[1] + GRID_SIZE_HALF];
         [
             (pos[0] / GRID_SIZE).floor() as i32,
             (pos[1] / GRID_SIZE).floor() as i32,
