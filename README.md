@@ -2,6 +2,10 @@
 
 a re-implement of enter the gungeon with bevy engine
 
+## Current Progress
+
+you can see it in http://xhslink.com/VH5qWq
+
 ## Build
 
 - rustc 1.69.0
