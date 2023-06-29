@@ -4,7 +4,7 @@ a re-implement of enter the gungeon with bevy engine
 
 ## Current Progress
 
-you can see it in http://xhslink.com/VH5qWq
+![ScreenShot](https://github.com/Ahuang0107/enter-the-gungeon/blob/main/img/ScreenShot.jpg)
 
 ## Build
 
