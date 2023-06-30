@@ -225,7 +225,7 @@ where
 {
     let mut result: HashMap<String, Vec<Image>> = HashMap::new();
 
-    let config = aseprite::Output::from(config_path).unwrap();
+    let config = serde_aseprite::AsepriteDate::from(config_path).unwrap();
     let mut dynamic_image = image::open(image_path).unwrap();
     let buffer = dynamic_image.as_mut_rgba8().unwrap();
     for item in config.frames {
